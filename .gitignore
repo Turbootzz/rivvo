@@ -24,3 +24,10 @@ target
 # Added by cargo
 
 /target
+
+# Environment
+.env
+
+# Claude specific files
+.claude/
+CLAUDE.md

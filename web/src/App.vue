@@ -1,11 +1,23 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { useRoute } from 'vue-router'
+import { computed } from 'vue'
+import AppNavbar from '@/components/layout/AppNavbar.vue'
+import AppSidebar from '@/components/layout/AppSidebar.vue'
+import AppFooter from '@/components/layout/AppFooter.vue'
+
+const route = useRoute()
+const showChrome = computed(() => !!route.meta.showChrome)
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <div class="flex min-h-screen flex-col bg-gray-50">
+    <AppNavbar v-if="showChrome" />
+    <div class="flex flex-1">
+      <AppSidebar v-if="showChrome" />
+      <main class="flex-1 p-6">
+        <RouterView />
+      </main>
+    </div>
+    <AppFooter />
+  </div>
 </template>
-
-<style scoped></style>
