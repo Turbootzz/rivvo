@@ -1,5 +1,7 @@
 use actix_web::dev::Payload;
-use actix_web::{Error, FromRequest, HttpRequest, error::ErrorInternalServerError, error::ErrorUnauthorized};
+use actix_web::{
+    Error, FromRequest, HttpRequest, error::ErrorInternalServerError, error::ErrorUnauthorized,
+};
 use serde_json::json;
 use std::future::{Ready, ready};
 use uuid::Uuid;
@@ -34,7 +36,9 @@ fn extract_user(req: &HttpRequest) -> Result<AuthenticatedUser, Error> {
 
     let config = req
         .app_data::<actix_web::web::Data<Config>>()
-        .ok_or_else(|| ErrorInternalServerError(json!({ "error": "Server configuration error" })))?;
+        .ok_or_else(|| {
+            ErrorInternalServerError(json!({ "error": "Server configuration error" }))
+        })?;
 
     let claims = jwt::decode_token(token, &config.jwt_secret)
         .map_err(|_| ErrorUnauthorized(json!({ "error": "Invalid or expired token" })))?;
