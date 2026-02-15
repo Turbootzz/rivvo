@@ -1,11 +1,18 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import Navbar from '@/components/layout/Navbar.vue'
+import Sidebar from '@/components/layout/Sidebar.vue'
+import Footer from '@/components/layout/Footer.vue'
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <div class="flex min-h-screen flex-col bg-gray-50">
+    <Navbar />
+    <div class="flex flex-1">
+      <Sidebar />
+      <main class="flex-1 p-6">
+        <RouterView />
+      </main>
+    </div>
+    <Footer />
+  </div>
 </template>
-
-<style scoped></style>
