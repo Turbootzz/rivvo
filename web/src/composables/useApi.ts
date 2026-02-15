@@ -37,6 +37,7 @@ export function useApi() {
     if (response.status === 401) {
       authStore.logout()
       router.push({ name: 'login' })
+      throw new Error('Unauthorized')
     }
 
     if (!response.ok) {

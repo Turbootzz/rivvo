@@ -1,8 +1,15 @@
 <script setup lang="ts">
 import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
 import { LogIn, LogOut, MessageSquarePlus } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
+const router = useRouter()
+
+function handleLogout() {
+  authStore.logout()
+  router.push('/')
+}
 </script>
 
 <template>
@@ -17,7 +24,7 @@ const authStore = useAuthStore()
           <template v-if="authStore.isAuthenticated">
             <span class="text-sm text-gray-600">{{ authStore.user?.name }}</span>
             <button
-              @click="authStore.logout()"
+              @click="handleLogout()"
               class="inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
             >
               <LogOut class="h-4 w-4" />

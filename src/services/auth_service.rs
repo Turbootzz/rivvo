@@ -34,7 +34,13 @@ pub async fn register_user(
     .bind(name)
     .bind(&password_hash)
     .fetch_one(pool)
-    .await?;
+    .await
+    .map_err(|e| match &e {
+        sqlx::Error::Database(db_err) if db_err.code().as_deref() == Some("23505") => {
+            AppError::BadRequest("A user with this email already exists".to_string())
+        }
+        _ => AppError::DatabaseError(e),
+    })?;
 
     Ok(user)
 }
@@ -49,7 +55,7 @@ pub async fn login_user(pool: &PgPool, email: &str, password: &str) -> Result<Us
     let password_hash = user
         .password_hash
         .as_ref()
-        .ok_or_else(|| AppError::Unauthorized("This account uses OAuth login".to_string()))?;
+        .ok_or_else(|| AppError::Unauthorized("Invalid email or password".to_string()))?;
 
     if !verify_password(password, password_hash)? {
         return Err(AppError::Unauthorized(

@@ -10,7 +10,7 @@ use crate::models::user::UserResponse;
 use crate::services::auth_service;
 use crate::utils::jwt;
 
-#[derive(Debug, Deserialize, Validate)]
+#[derive(Deserialize, Validate)]
 pub struct RegisterRequest {
     #[validate(email(message = "Invalid email address"))]
     pub email: String,
@@ -20,7 +20,7 @@ pub struct RegisterRequest {
     pub password: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 pub struct LoginRequest {
     pub email: String,
     pub password: String,
