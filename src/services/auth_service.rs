@@ -1,5 +1,5 @@
-use argon2::password_hash::rand_core::OsRng;
 use argon2::password_hash::SaltString;
+use argon2::password_hash::rand_core::OsRng;
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use sqlx::PgPool;
 
@@ -13,11 +13,10 @@ pub async fn register_user(
     password: &str,
 ) -> Result<User, AppError> {
     // Check if email already exists
-    let existing: Option<User> =
-        sqlx::query_as("SELECT * FROM users WHERE email = $1")
-            .bind(email)
-            .fetch_optional(pool)
-            .await?;
+    let existing: Option<User> = sqlx::query_as("SELECT * FROM users WHERE email = $1")
+        .bind(email)
+        .fetch_optional(pool)
+        .await?;
 
     if existing.is_some() {
         return Err(AppError::BadRequest(

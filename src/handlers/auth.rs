@@ -14,9 +14,17 @@ use crate::utils::jwt;
 pub struct RegisterRequest {
     #[validate(email(message = "Invalid email address"))]
     pub email: String,
-    #[validate(length(min = 2, max = 255, message = "Name must be between 2 and 255 characters"))]
+    #[validate(length(
+        min = 2,
+        max = 255,
+        message = "Name must be between 2 and 255 characters"
+    ))]
     pub name: String,
-    #[validate(length(min = 8, max = 128, message = "Password must be between 8 and 128 characters"))]
+    #[validate(length(
+        min = 8,
+        max = 128,
+        message = "Password must be between 8 and 128 characters"
+    ))]
     pub password: String,
 }
 

@@ -26,21 +26,18 @@ fn extract_user(req: &HttpRequest) -> Result<AuthenticatedUser, Error> {
         .headers()
         .get("Authorization")
         .and_then(|v| v.to_str().ok())
-        .ok_or_else(|| {
-            ErrorUnauthorized(json!({ "error": "Missing Authorization header" }))
-        })?;
+        .ok_or_else(|| ErrorUnauthorized(json!({ "error": "Missing Authorization header" })))?;
 
     let token = auth_header.strip_prefix("Bearer ").ok_or_else(|| {
         ErrorUnauthorized(json!({ "error": "Invalid Authorization header format" }))
     })?;
 
-    let config = req.app_data::<actix_web::web::Data<Config>>().ok_or_else(|| {
-        ErrorUnauthorized(json!({ "error": "Server configuration error" }))
-    })?;
+    let config = req
+        .app_data::<actix_web::web::Data<Config>>()
+        .ok_or_else(|| ErrorUnauthorized(json!({ "error": "Server configuration error" })))?;
 
-    let claims = jwt::decode_token(token, &config.jwt_secret).map_err(|_| {
-        ErrorUnauthorized(json!({ "error": "Invalid or expired token" }))
-    })?;
+    let claims = jwt::decode_token(token, &config.jwt_secret)
+        .map_err(|_| ErrorUnauthorized(json!({ "error": "Invalid or expired token" })))?;
 
     Ok(AuthenticatedUser {
         user_id: claims.sub,
