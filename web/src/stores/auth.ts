@@ -4,8 +4,14 @@ import type { User } from '@/types'
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(localStorage.getItem('token'))
-  const storedUser = localStorage.getItem('user')
-  const user = ref<User | null>(storedUser ? JSON.parse(storedUser) : null)
+  let parsedUser: User | null = null
+  try {
+    const storedUser = localStorage.getItem('user')
+    if (storedUser) parsedUser = JSON.parse(storedUser)
+  } catch {
+    localStorage.removeItem('user')
+  }
+  const user = ref<User | null>(parsedUser)
 
   const isAuthenticated = computed(() => !!token.value && !!user.value)
 

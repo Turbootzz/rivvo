@@ -24,7 +24,10 @@ pub async fn register_user(
         ));
     }
 
-    let password_hash = hash_password(password)?;
+    let password = password.to_owned();
+    let password_hash = tokio::task::spawn_blocking(move || hash_password(&password))
+        .await
+        .map_err(|e| AppError::InternalError(format!("Blocking task failed: {e}")))??;
 
     let user: User = sqlx::query_as(
         "INSERT INTO users (email, name, password_hash, provider) VALUES ($1, $2, $3, 'email') RETURNING *",
@@ -51,12 +54,18 @@ pub async fn login_user(pool: &PgPool, email: &str, password: &str) -> Result<Us
         .await?
         .ok_or_else(|| AppError::Unauthorized("Invalid email or password".to_string()))?;
 
-    let password_hash = user
+    let stored_hash = user
         .password_hash
         .as_ref()
-        .ok_or_else(|| AppError::Unauthorized("Invalid email or password".to_string()))?;
+        .ok_or_else(|| AppError::Unauthorized("Invalid email or password".to_string()))?
+        .clone();
 
-    if !verify_password(password, password_hash)? {
+    let password = password.to_owned();
+    let valid = tokio::task::spawn_blocking(move || verify_password(&password, &stored_hash))
+        .await
+        .map_err(|e| AppError::InternalError(format!("Blocking task failed: {e}")))??;
+
+    if !valid {
         return Err(AppError::Unauthorized(
             "Invalid email or password".to_string(),
         ));
