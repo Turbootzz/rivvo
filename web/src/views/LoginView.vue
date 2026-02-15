@@ -28,12 +28,12 @@ async function handleSubmit() {
         email: email.value,
         name: name.value,
         password: password.value,
-      })
+      }, { skipAuthRedirect: true })
     } else {
       response = await api.post<AuthResponse>('/auth/login', {
         email: email.value,
         password: password.value,
-      })
+      }, { skipAuthRedirect: true })
     }
 
     authStore.setAuth(response.token, response.user)

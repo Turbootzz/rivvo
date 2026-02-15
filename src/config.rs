@@ -6,6 +6,7 @@ pub struct Config {
     pub jwt_secret: String,
     pub host: String,
     pub port: u16,
+    pub cors_origin: String,
 }
 
 impl Config {
@@ -19,12 +20,15 @@ impl Config {
             .unwrap_or_else(|_| "8080".to_string())
             .parse::<u16>()
             .map_err(|_| "PORT must be a valid number".to_string())?;
+        let cors_origin =
+            env::var("CORS_ORIGIN").unwrap_or_else(|_| "http://localhost:5173".to_string());
 
         Ok(Config {
             database_url,
             jwt_secret,
             host,
             port,
+            cors_origin,
         })
     }
 }

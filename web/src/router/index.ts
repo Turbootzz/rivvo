@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,13 +20,24 @@ const router = createRouter({
       component: () => import('@/views/BoardView.vue'),
       meta: { requiresAuth: true },
     },
+    {
+      path: '/roadmap',
+      name: 'roadmap',
+      component: () => import('@/views/RoadmapView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/changelog',
+      name: 'changelog',
+      component: () => import('@/views/ChangelogView.vue'),
+    },
   ],
 })
 
 router.beforeEach((to) => {
   if (to.meta.requiresAuth) {
-    const token = localStorage.getItem('token')
-    if (!token) {
+    const authStore = useAuthStore()
+    if (!authStore.isAuthenticated) {
       return { name: 'login' }
     }
   }

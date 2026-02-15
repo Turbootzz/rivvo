@@ -1,5 +1,5 @@
 import { useAuthStore } from '@/stores/auth'
-import { useRouter } from 'vue-router'
+import router from '@/router'
 
 const BASE_URL = '/api'
 
@@ -7,14 +7,14 @@ interface ApiOptions {
   method?: string
   body?: unknown
   headers?: Record<string, string>
+  skipAuthRedirect?: boolean
 }
 
 export function useApi() {
   const authStore = useAuthStore()
-  const router = useRouter()
 
   async function request<T>(endpoint: string, options: ApiOptions = {}): Promise<T> {
-    const { method = 'GET', body, headers = {} } = options
+    const { method = 'GET', body, headers = {}, skipAuthRedirect = false } = options
 
     if (authStore.token) {
       headers['Authorization'] = `Bearer ${authStore.token}`
@@ -34,7 +34,7 @@ export function useApi() {
 
     const response = await fetch(`${BASE_URL}${endpoint}`, config)
 
-    if (response.status === 401) {
+    if (response.status === 401 && !skipAuthRedirect) {
       authStore.logout()
       router.push({ name: 'login' })
       throw new Error('Unauthorized')
@@ -50,8 +50,8 @@ export function useApi() {
 
   return {
     get: <T>(endpoint: string) => request<T>(endpoint),
-    post: <T>(endpoint: string, body: unknown) =>
-      request<T>(endpoint, { method: 'POST', body }),
+    post: <T>(endpoint: string, body: unknown, options?: Omit<ApiOptions, 'method' | 'body'>) =>
+      request<T>(endpoint, { method: 'POST', body, ...options }),
     put: <T>(endpoint: string, body: unknown) =>
       request<T>(endpoint, { method: 'PUT', body }),
     del: <T>(endpoint: string) => request<T>(endpoint, { method: 'DELETE' }),

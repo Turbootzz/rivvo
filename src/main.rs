@@ -36,11 +36,12 @@ async fn main() -> std::io::Result<()> {
 
     tracing::info!("Starting server at http://{}:{}", host, port);
 
+    let cors_origin = config.cors_origin.clone();
     let config_data = web::Data::new(config);
 
     HttpServer::new(move || {
         let cors = Cors::default()
-            .allowed_origin("http://localhost:5173")
+            .allowed_origin(&cors_origin)
             .allowed_methods(vec!["GET", "POST", "PUT", "DELETE"])
             .allowed_headers(vec![
                 actix_web::http::header::AUTHORIZATION,

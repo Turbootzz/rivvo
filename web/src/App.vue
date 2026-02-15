@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import Navbar from '@/components/layout/Navbar.vue'
-import Sidebar from '@/components/layout/Sidebar.vue'
-import Footer from '@/components/layout/Footer.vue'
+import AppNavbar from '@/components/layout/AppNavbar.vue'
+import AppSidebar from '@/components/layout/AppSidebar.vue'
+import AppFooter from '@/components/layout/AppFooter.vue'
 </script>
 
 <template>
   <div class="flex min-h-screen flex-col bg-gray-50">
-    <Navbar />
+    <AppNavbar />
     <div class="flex flex-1">
-      <Sidebar />
+      <AppSidebar />
       <main class="flex-1 p-6">
         <RouterView />
       </main>
     </div>
-    <Footer />
+    <AppFooter />
   </div>
 </template>
