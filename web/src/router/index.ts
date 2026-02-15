@@ -18,18 +18,19 @@ const router = createRouter({
       path: '/board',
       name: 'board',
       component: () => import('@/views/BoardView.vue'),
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, showChrome: true },
     },
     {
       path: '/roadmap',
       name: 'roadmap',
       component: () => import('@/views/RoadmapView.vue'),
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, showChrome: true },
     },
     {
       path: '/changelog',
       name: 'changelog',
       component: () => import('@/views/ChangelogView.vue'),
+      meta: { showChrome: true },
     },
   ],
 })

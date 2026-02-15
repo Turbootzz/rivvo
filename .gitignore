@@ -30,3 +30,4 @@ target
 
 # Claude specific files
 .claude/
+CLAUDE.md

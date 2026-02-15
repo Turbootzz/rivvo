@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MessageSquarePlus, Vote, Map } from 'lucide-vue-next'
+import { MessageSquarePlus, Vote, Map as MapIcon } from 'lucide-vue-next'
 </script>
 
 <template>
@@ -49,7 +49,7 @@ import { MessageSquarePlus, Vote, Map } from 'lucide-vue-next'
       </div>
       <div class="flex flex-col items-center text-center">
         <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-100">
-          <Map class="h-6 w-6 text-primary-600" />
+          <MapIcon class="h-6 w-6 text-primary-600" />
         </div>
         <h3 class="mt-4 text-lg font-semibold text-gray-900">Public Roadmap</h3>
         <p class="mt-2 text-sm text-gray-600">

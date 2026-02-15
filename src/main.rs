@@ -38,6 +38,7 @@ async fn main() -> std::io::Result<()> {
 
     let cors_origin = config.cors_origin.clone();
     let config_data = web::Data::new(config);
+    let pool_data = web::Data::new(pool);
 
     HttpServer::new(move || {
         let cors = Cors::default()
@@ -52,7 +53,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(cors)
             .wrap(Logger::default())
-            .app_data(web::Data::new(pool.clone()))
+            .app_data(pool_data.clone())
             .app_data(config_data.clone())
             .service(
                 web::scope("/api")

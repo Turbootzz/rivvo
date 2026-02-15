@@ -6,7 +6,7 @@ import AppSidebar from '@/components/layout/AppSidebar.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
 
 const route = useRoute()
-const showChrome = computed(() => !!route.meta.requiresAuth)
+const showChrome = computed(() => !!route.meta.showChrome)
 </script>
 
 <template>
