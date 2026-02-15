@@ -45,7 +45,8 @@ impl ResponseError for AppError {
 }
 
 impl From<jsonwebtoken::errors::Error> for AppError {
-    fn from(_: jsonwebtoken::errors::Error) -> Self {
+    fn from(e: jsonwebtoken::errors::Error) -> Self {
+        tracing::debug!("JWT error: {e}");
         AppError::Unauthorized("Invalid or expired token".to_string())
     }
 }

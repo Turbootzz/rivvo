@@ -28,9 +28,11 @@ pub struct RegisterRequest {
     pub password: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Validate)]
 pub struct LoginRequest {
+    #[validate(email(message = "Invalid email address"))]
     pub email: String,
+    #[validate(length(min = 1, message = "Password is required"))]
     pub password: String,
 }
 
@@ -65,6 +67,9 @@ pub async fn login(
     config: web::Data<Config>,
     body: web::Json<LoginRequest>,
 ) -> Result<HttpResponse, AppError> {
+    body.validate()
+        .map_err(|e| AppError::ValidationError(e.to_string()))?;
+
     let user = auth_service::login_user(pool.get_ref(), &body.email, &body.password).await?;
 
     let token = jwt::encode_token(user.id, &config.jwt_secret)

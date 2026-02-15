@@ -11,9 +11,12 @@ pub async fn health_check(pool: web::Data<PgPool>) -> HttpResponse {
             "status": "ok",
             "database": "connected"
         })),
-        Err(_) => HttpResponse::ServiceUnavailable().json(json!({
-            "status": "error",
-            "database": "disconnected"
-        })),
+        Err(e) => {
+            tracing::warn!("Health check failed: database unreachable: {e}");
+            HttpResponse::ServiceUnavailable().json(json!({
+                "status": "error",
+                "database": "disconnected"
+            }))
+        }
     }
 }

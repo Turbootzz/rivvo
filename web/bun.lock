@@ -8,7 +8,7 @@
         "lucide-vue-next": "^0.564.0",
         "pinia": "^3.0.4",
         "vue": "^3.5.27",
-        "vue-router": "^5.0.1",
+        "vue-router": "^5.0.1"
       },
       "devDependencies": {
         "@tailwindcss/vite": "^4.1.18",
@@ -34,9 +34,9 @@
         "vite": "^7.3.1",
         "vite-plugin-vue-devtools": "^8.0.5",
         "vitest": "^4.0.18",
-        "vue-tsc": "^3.2.4",
-      },
-    },
+        "vue-tsc": "^3.2.4"
+      }
+    }
   },
   "packages": {
     "@acemir/cssom": ["@acemir/cssom@0.9.31", "", {}, "sha512-ZnR3GSaH+/vJ0YlHau21FjfLYjMpYVIzTD8M8vIEQvIGxeOXyXdzCI140rrCY862p/C/BbzWsjc1dgnM9mkoTA=="],
@@ -1081,6 +1081,6 @@
 
     "editorconfig/minimatch/brace-expansion/balanced-match": ["balanced-match@1.0.2", "", {}, "sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw=="],
 
-    "glob/minimatch/brace-expansion/balanced-match": ["balanced-match@1.0.2", "", {}, "sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw=="],
+    "glob/minimatch/brace-expansion/balanced-match": ["balanced-match@1.0.2", "", {}, "sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw=="]
   }
 }

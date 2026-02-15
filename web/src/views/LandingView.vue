@@ -21,6 +21,7 @@ import { MessageSquarePlus, Vote, Map } from 'lucide-vue-next'
       <a
         href="https://github.com/turbootzz/rivvo"
         target="_blank"
+        rel="noopener noreferrer"
         class="rounded-md border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50"
       >
         View on GitHub

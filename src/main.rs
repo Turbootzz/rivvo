@@ -22,7 +22,7 @@ async fn main() -> std::io::Result<()> {
 
     let config = config::Config::from_env().expect("Failed to load configuration");
 
-    let pool = db::create_pool(&config.database_url)
+    let pool = db::create_pool(&config.database_url, config.max_db_connections)
         .await
         .expect("Failed to create database pool");
 

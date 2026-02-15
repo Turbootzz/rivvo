@@ -40,8 +40,10 @@ fn extract_user(req: &HttpRequest) -> Result<AuthenticatedUser, Error> {
             ErrorInternalServerError(json!({ "error": "Server configuration error" }))
         })?;
 
-    let claims = jwt::decode_token(token, &config.jwt_secret)
-        .map_err(|_| ErrorUnauthorized(json!({ "error": "Invalid or expired token" })))?;
+    let claims = jwt::decode_token(token, &config.jwt_secret).map_err(|e| {
+        tracing::debug!("Token decode failed: {e}");
+        ErrorUnauthorized(json!({ "error": "Invalid or expired token" }))
+    })?;
 
     Ok(AuthenticatedUser {
         user_id: claims.sub,
