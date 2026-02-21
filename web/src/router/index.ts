@@ -15,9 +15,21 @@ const router = createRouter({
       component: () => import('@/views/LoginView.vue'),
     },
     {
-      path: '/board',
-      name: 'board',
+      path: '/boards',
+      name: 'boards',
       component: () => import('@/views/BoardView.vue'),
+      meta: { requiresAuth: true, showChrome: true },
+    },
+    {
+      path: '/boards/:slug',
+      name: 'board-detail',
+      component: () => import('@/views/BoardDetailView.vue'),
+      meta: { requiresAuth: true, showChrome: true },
+    },
+    {
+      path: '/posts/:id',
+      name: 'post-detail',
+      component: () => import('@/views/PostDetailView.vue'),
       meta: { requiresAuth: true, showChrome: true },
     },
     {
