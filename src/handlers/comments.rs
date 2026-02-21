@@ -103,6 +103,13 @@ pub async fn delete_comment(
     let member = org_service::get_member(pool.get_ref(), board.org_id, auth.user_id).await?;
     let is_admin = member.role.as_deref() == Some("admin");
 
-    comment_service::delete_comment(pool.get_ref(), comment_id, auth.user_id, is_admin).await?;
+    comment_service::delete_comment(
+        pool.get_ref(),
+        comment_id,
+        auth.user_id,
+        is_admin,
+        comment.post_id,
+    )
+    .await?;
     Ok(HttpResponse::NoContent().finish())
 }

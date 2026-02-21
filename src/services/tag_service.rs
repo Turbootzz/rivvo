@@ -49,6 +49,48 @@ pub async fn get_post_tags(pool: &PgPool, post_id: Uuid) -> Result<Vec<Tag>, App
     Ok(tags)
 }
 
+/// Batch-fetch tags for multiple posts in a single query.
+/// Returns a HashMap mapping post_id -> Vec<Tag>.
+pub async fn get_tags_for_post_ids(
+    pool: &PgPool,
+    post_ids: &[Uuid],
+) -> Result<std::collections::HashMap<Uuid, Vec<Tag>>, AppError> {
+    use std::collections::HashMap;
+
+    #[derive(sqlx::FromRow)]
+    struct PostTagRow {
+        post_id: Uuid,
+        id: Uuid,
+        board_id: Uuid,
+        name: String,
+        color: Option<String>,
+    }
+
+    let rows: Vec<PostTagRow> = sqlx::query_as(
+        r#"
+        SELECT pt.post_id, t.id, t.board_id, t.name, t.color
+        FROM tags t
+        JOIN post_tags pt ON pt.tag_id = t.id
+        WHERE pt.post_id = ANY($1)
+        ORDER BY t.name ASC
+        "#,
+    )
+    .bind(post_ids)
+    .fetch_all(pool)
+    .await?;
+
+    let mut map: HashMap<Uuid, Vec<Tag>> = HashMap::new();
+    for row in rows {
+        map.entry(row.post_id).or_default().push(Tag {
+            id: row.id,
+            board_id: row.board_id,
+            name: row.name,
+            color: row.color,
+        });
+    }
+    Ok(map)
+}
+
 pub async fn delete_tag(pool: &PgPool, tag_id: Uuid) -> Result<(), AppError> {
     let result = sqlx::query("DELETE FROM tags WHERE id = $1")
         .bind(tag_id)

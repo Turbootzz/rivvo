@@ -72,31 +72,33 @@ pub async fn delete_comment(
     comment_id: Uuid,
     user_id: Uuid,
     is_admin: bool,
+    post_id: Uuid,
 ) -> Result<(), AppError> {
     let mut tx = pool.begin().await?;
 
-    // Fetch the comment to verify ownership and get post_id
-    let comment: Comment = sqlx::query_as("SELECT * FROM comments WHERE id = $1")
-        .bind(comment_id)
-        .fetch_optional(&mut *tx)
-        .await?
-        .ok_or_else(|| AppError::NotFound("Comment not found".to_string()))?;
+    // Atomic delete with ownership check via DELETE ... RETURNING
+    let deleted: Option<Comment> = if is_admin {
+        sqlx::query_as("DELETE FROM comments WHERE id = $1 RETURNING *")
+            .bind(comment_id)
+            .fetch_optional(&mut *tx)
+            .await?
+    } else {
+        sqlx::query_as("DELETE FROM comments WHERE id = $1 AND author_id = $2 RETURNING *")
+            .bind(comment_id)
+            .bind(user_id)
+            .fetch_optional(&mut *tx)
+            .await?
+    };
 
-    // Only the author or an org admin can delete
-    if comment.author_id != Some(user_id) && !is_admin {
+    if deleted.is_none() {
         return Err(AppError::Forbidden(
             "You can only delete your own comments".to_string(),
         ));
     }
 
-    sqlx::query("DELETE FROM comments WHERE id = $1")
-        .bind(comment_id)
-        .execute(&mut *tx)
-        .await?;
-
     // Decrement comment count
     sqlx::query("UPDATE posts SET comment_count = GREATEST(comment_count - 1, 0) WHERE id = $1")
-        .bind(comment.post_id)
+        .bind(post_id)
         .execute(&mut *tx)
         .await?;
 

@@ -18,9 +18,8 @@ export const usePostStore = defineStore('post', () => {
       if (sort) params.set('sort', sort)
       if (status) params.set('status', status)
       const qs = params.toString()
-      posts.value = await api.get<PostListItem[]>(
-        `/boards/${boardId}/posts${qs ? `?${qs}` : ''}`,
-      )
+      posts.value =
+        (await api.get<PostListItem[]>(`/boards/${boardId}/posts${qs ? `?${qs}` : ''}`)) ?? []
     } finally {
       loading.value = false
     }
@@ -49,12 +48,14 @@ export const usePostStore = defineStore('post', () => {
   async function createPost(boardId: string, title: string, description?: string) {
     const api = useApi()
     const post = await api.post<Post>(`/boards/${boardId}/posts`, { title, description })
+    if (!post) throw new Error('Failed to create post')
     return post
   }
 
   async function toggleVote(postId: string) {
     const api = useApi()
     const result = await api.post<VoteResult>(`/posts/${postId}/vote`, {})
+    if (!result) throw new Error('Failed to toggle vote')
 
     // Update in list
     const item = posts.value.find((p) => p.id === postId)
@@ -74,12 +75,13 @@ export const usePostStore = defineStore('post', () => {
 
   async function fetchComments(postId: string) {
     const api = useApi()
-    comments.value = await api.get<Comment[]>(`/posts/${postId}/comments`)
+    comments.value = (await api.get<Comment[]>(`/posts/${postId}/comments`)) ?? []
   }
 
   async function addComment(postId: string, body: string) {
     const api = useApi()
     const comment = await api.post<Comment>(`/posts/${postId}/comments`, { body })
+    if (!comment) throw new Error('Failed to add comment')
     comments.value.push(comment)
 
     // Increment comment count
@@ -112,6 +114,7 @@ export const usePostStore = defineStore('post', () => {
   async function updateStatus(boardId: string, postId: string, status: PostStatus) {
     const api = useApi()
     const updated = await api.put<Post>(`/boards/${boardId}/posts/${postId}/status`, { status })
+    if (!updated) throw new Error('Failed to update status')
     if (currentPost.value?.id === postId) {
       currentPost.value.status = updated.status
     }

@@ -21,16 +21,7 @@ pub struct CreatePostRequest {
     pub description: Option<String>,
 }
 
-#[derive(Deserialize, Validate)]
-pub struct UpdatePostRequest {
-    #[validate(length(
-        min = 1,
-        max = 500,
-        message = "Title must be between 1 and 500 characters"
-    ))]
-    pub title: String,
-    pub description: Option<String>,
-}
+pub type UpdatePostRequest = CreatePostRequest;
 
 #[derive(Deserialize)]
 pub struct UpdateStatusRequest {
@@ -60,11 +51,18 @@ pub async fn list_posts(
     let rows = post_service::get_posts(pool.get_ref(), board_id, auth.user_id, sort, status_filter)
         .await?;
 
-    // Fetch tags for all posts in batch
+    // Fetch tags for all posts in a single batch query
+    let post_ids: Vec<Uuid> = rows.iter().map(|r| r.id).collect();
+    let mut tags_map = tag_service::get_tags_for_post_ids(pool.get_ref(), &post_ids).await?;
+
     let mut response: Vec<PostListResponse> = Vec::with_capacity(rows.len());
     for row in rows {
-        let tags = tag_service::get_post_tags(pool.get_ref(), row.id).await?;
-        let tag_responses: Vec<TagResponse> = tags.into_iter().map(TagResponse::from).collect();
+        let tag_responses: Vec<TagResponse> = tags_map
+            .remove(&row.id)
+            .unwrap_or_default()
+            .into_iter()
+            .map(TagResponse::from)
+            .collect();
 
         let description_preview = row.description.as_ref().map(|d| {
             if d.chars().count() > 200 {
@@ -128,7 +126,11 @@ pub async fn get_post(
     auth: AuthenticatedUser,
     path: web::Path<(Uuid, Uuid)>,
 ) -> Result<HttpResponse, AppError> {
-    let (_board_id, post_id) = path.into_inner();
+    let (board_id, post_id) = path.into_inner();
+
+    // Verify org membership
+    let board = board_service::get_board_by_id(pool.get_ref(), board_id).await?;
+    org_service::get_member(pool.get_ref(), board.org_id, auth.user_id).await?;
 
     let detail = post_service::get_post(pool.get_ref(), post_id, auth.user_id).await?;
     let tags = tag_service::get_post_tags(pool.get_ref(), post_id).await?;

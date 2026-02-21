@@ -31,6 +31,7 @@ export const useBoardStore = defineStore('board', () => {
   async function createBoard(orgId: string, name: string, description?: string) {
     const api = useApi()
     const board = await api.post<Board>(`/orgs/${orgId}/boards`, { name, description })
+    if (!board) throw new Error('Failed to create board')
     boards.value.push(board)
     return board
   }

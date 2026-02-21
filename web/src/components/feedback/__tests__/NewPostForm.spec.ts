@@ -26,6 +26,7 @@ describe('NewPostForm', () => {
     const wrapper = mount(NewPostForm)
 
     const cancelBtn = wrapper.findAll('button').find((b) => b.text() === 'Cancel')
+    expect(cancelBtn).toBeDefined()
     await cancelBtn!.trigger('click')
 
     expect(wrapper.emitted('cancel')).toHaveLength(1)
