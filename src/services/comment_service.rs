@@ -91,9 +91,13 @@ pub async fn delete_comment(
     };
 
     if deleted.is_none() {
-        return Err(AppError::Forbidden(
-            "You can only delete your own comments".to_string(),
-        ));
+        return if is_admin {
+            Err(AppError::NotFound("Comment not found".to_string()))
+        } else {
+            Err(AppError::Forbidden(
+                "You can only delete your own comments".to_string(),
+            ))
+        };
     }
 
     // Decrement comment count

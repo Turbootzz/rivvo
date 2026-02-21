@@ -39,6 +39,7 @@ describe('NewPostForm', () => {
     await wrapper.find('textarea').setValue('Desc')
     await wrapper.find('form').trigger('submit')
 
+    expect(wrapper.emitted('submit')).toHaveLength(1)
     expect((wrapper.find('input').element as HTMLInputElement).value).toBe('Title')
     expect((wrapper.find('textarea').element as HTMLTextAreaElement).value).toBe('Desc')
   })

@@ -12,7 +12,7 @@ export const useBoardStore = defineStore('board', () => {
     const api = useApi()
     loading.value = true
     try {
-      boards.value = await api.get<Board[]>(`/orgs/${orgId}/boards`)
+      boards.value = (await api.get<Board[]>(`/orgs/${orgId}/boards`)) ?? []
     } finally {
       loading.value = false
     }

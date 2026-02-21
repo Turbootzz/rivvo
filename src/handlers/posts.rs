@@ -18,6 +18,7 @@ pub struct CreatePostRequest {
         message = "Title must be between 1 and 500 characters"
     ))]
     pub title: String,
+    #[validate(length(max = 10000, message = "Description must be at most 10000 characters"))]
     pub description: Option<String>,
 }
 
@@ -133,6 +134,12 @@ pub async fn get_post(
     org_service::get_member(pool.get_ref(), board.org_id, auth.user_id).await?;
 
     let detail = post_service::get_post(pool.get_ref(), post_id, auth.user_id).await?;
+
+    // Verify post belongs to the board in the URL path
+    if detail.board_id != board_id {
+        return Err(AppError::NotFound("Post not found".to_string()));
+    }
+
     let tags = tag_service::get_post_tags(pool.get_ref(), post_id).await?;
 
     Ok(HttpResponse::Ok().json(build_detail_response(detail, tags)))
@@ -163,16 +170,22 @@ pub async fn update_post(
     path: web::Path<(Uuid, Uuid)>,
     body: web::Json<UpdatePostRequest>,
 ) -> Result<HttpResponse, AppError> {
-    let (_board_id, post_id) = path.into_inner();
+    let (board_id, post_id) = path.into_inner();
     body.validate()
         .map_err(|e| AppError::ValidationError(e.to_string()))?;
 
     let post = post_service::get_post_raw(pool.get_ref(), post_id).await?;
+    if post.board_id != board_id {
+        return Err(AppError::NotFound("Post not found".to_string()));
+    }
 
-    // Only author or org admin can update
-    if post.author_id != Some(auth.user_id) {
-        let board = board_service::get_board_by_id(pool.get_ref(), post.board_id).await?;
-        org_service::require_org_admin(pool.get_ref(), board.org_id, auth.user_id).await?;
+    // Verify org membership first, then check author or admin
+    let board = board_service::get_board_by_id(pool.get_ref(), post.board_id).await?;
+    let member = org_service::get_member(pool.get_ref(), board.org_id, auth.user_id).await?;
+    if post.author_id != Some(auth.user_id) && member.role.as_deref() != Some("admin") {
+        return Err(AppError::Forbidden(
+            "Only the author or an admin can update this post".to_string(),
+        ));
     }
 
     let updated = post_service::update_post(
@@ -194,14 +207,20 @@ pub async fn delete_post(
     auth: AuthenticatedUser,
     path: web::Path<(Uuid, Uuid)>,
 ) -> Result<HttpResponse, AppError> {
-    let (_board_id, post_id) = path.into_inner();
+    let (board_id, post_id) = path.into_inner();
 
     let post = post_service::get_post_raw(pool.get_ref(), post_id).await?;
+    if post.board_id != board_id {
+        return Err(AppError::NotFound("Post not found".to_string()));
+    }
 
-    // Only author or org admin can delete
-    if post.author_id != Some(auth.user_id) {
-        let board = board_service::get_board_by_id(pool.get_ref(), post.board_id).await?;
-        org_service::require_org_admin(pool.get_ref(), board.org_id, auth.user_id).await?;
+    // Verify org membership first, then check author or admin
+    let board = board_service::get_board_by_id(pool.get_ref(), post.board_id).await?;
+    let member = org_service::get_member(pool.get_ref(), board.org_id, auth.user_id).await?;
+    if post.author_id != Some(auth.user_id) && member.role.as_deref() != Some("admin") {
+        return Err(AppError::Forbidden(
+            "Only the author or an admin can delete this post".to_string(),
+        ));
     }
 
     post_service::delete_post(pool.get_ref(), post_id).await?;
@@ -214,10 +233,13 @@ pub async fn update_status(
     path: web::Path<(Uuid, Uuid)>,
     body: web::Json<UpdateStatusRequest>,
 ) -> Result<HttpResponse, AppError> {
-    let (_board_id, post_id) = path.into_inner();
+    let (board_id, post_id) = path.into_inner();
 
     // Only org admin can change status
     let post = post_service::get_post_raw(pool.get_ref(), post_id).await?;
+    if post.board_id != board_id {
+        return Err(AppError::NotFound("Post not found".to_string()));
+    }
     let board = board_service::get_board_by_id(pool.get_ref(), post.board_id).await?;
     org_service::require_org_admin(pool.get_ref(), board.org_id, auth.user_id).await?;
 
