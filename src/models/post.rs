@@ -64,7 +64,6 @@ pub struct PostDetailRow {
     pub updated_at: Option<DateTime<Utc>>,
     pub author_id: Option<Uuid>,
     pub author_name: Option<String>,
-    pub author_email: Option<String>,
     pub author_avatar_url: Option<String>,
     pub has_voted: bool,
 }
@@ -90,7 +89,6 @@ pub struct PostDetailResponse {
 pub struct PostAuthor {
     pub id: Uuid,
     pub name: String,
-    pub email: String,
     pub avatar_url: Option<String>,
 }
 

@@ -69,7 +69,7 @@ pub async fn delete_comment(
         .ok_or_else(|| AppError::NotFound("Comment not found".to_string()))?;
 
     if comment.author_id != Some(user_id) {
-        return Err(AppError::Unauthorized(
+        return Err(AppError::Forbidden(
             "You can only delete your own comments".to_string(),
         ));
     }

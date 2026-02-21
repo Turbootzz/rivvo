@@ -94,7 +94,7 @@ pub async fn get_post(
         r#"
         SELECT p.id, p.board_id, p.title, p.description, p.status, p.vote_count, p.comment_count,
                p.pinned, p.created_at, p.updated_at,
-               p.author_id, u.name as author_name, u.email as author_email, u.avatar_url as author_avatar_url,
+               p.author_id, u.name as author_name, u.avatar_url as author_avatar_url,
                EXISTS(SELECT 1 FROM votes v WHERE v.post_id = p.id AND v.user_id = $2) as has_voted
         FROM posts p
         LEFT JOIN users u ON u.id = p.author_id

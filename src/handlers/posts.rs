@@ -209,7 +209,6 @@ fn build_detail_response(
     let author = row.author_id.map(|id| PostAuthor {
         id,
         name: row.author_name.unwrap_or_default(),
-        email: row.author_email.unwrap_or_default(),
         avatar_url: row.author_avatar_url,
     });
 

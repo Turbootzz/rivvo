@@ -46,7 +46,6 @@ export interface PostListItem {
 export interface PostAuthor {
   id: string
   name: string
-  email: string
   avatar_url: string | null
 }
 

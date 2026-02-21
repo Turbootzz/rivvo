@@ -65,7 +65,7 @@ pub async fn get_member(pool: &PgPool, org_id: Uuid, user_id: Uuid) -> Result<Or
         .bind(user_id)
         .fetch_optional(pool)
         .await?
-        .ok_or_else(|| AppError::Unauthorized("Not a member of this organization".to_string()))
+        .ok_or_else(|| AppError::Forbidden("Not a member of this organization".to_string()))
 }
 
 pub async fn is_org_admin(pool: &PgPool, org_id: Uuid, user_id: Uuid) -> Result<bool, AppError> {
@@ -75,7 +75,7 @@ pub async fn is_org_admin(pool: &PgPool, org_id: Uuid, user_id: Uuid) -> Result<
 
 pub async fn require_org_admin(pool: &PgPool, org_id: Uuid, user_id: Uuid) -> Result<(), AppError> {
     if !is_org_admin(pool, org_id, user_id).await? {
-        return Err(AppError::Unauthorized("Admin access required".to_string()));
+        return Err(AppError::Forbidden("Admin access required".to_string()));
     }
     Ok(())
 }

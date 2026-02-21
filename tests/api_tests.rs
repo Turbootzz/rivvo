@@ -241,7 +241,7 @@ async fn create_board_as_admin() {
 }
 
 #[actix_web::test]
-async fn create_board_as_member_returns_401() {
+async fn create_board_as_member_returns_403() {
     let pool = common::create_pool().await;
     let (_admin_token, _admin_id, org_id) = common::register_user(&pool).await;
     let (member_token, _member_id) = common::register_member(&pool, org_id).await;
@@ -254,7 +254,7 @@ async fn create_board_as_member_returns_401() {
         .to_request();
 
     let resp = actix_test::call_service(&app, req).await;
-    assert_eq!(resp.status(), 401);
+    assert_eq!(resp.status(), 403);
 }
 
 #[actix_web::test]
@@ -453,7 +453,7 @@ async fn update_post_by_author() {
 }
 
 #[actix_web::test]
-async fn update_post_by_non_author_non_admin_returns_401() {
+async fn update_post_by_non_author_non_admin_returns_403() {
     let pool = common::create_pool().await;
     let (admin_token, _admin_id, org_id) = common::register_user(&pool).await;
     let (member_token, _member_id) = common::register_member(&pool, org_id).await;
@@ -468,7 +468,7 @@ async fn update_post_by_non_author_non_admin_returns_401() {
         .to_request();
 
     let resp = actix_test::call_service(&app, req).await;
-    assert_eq!(resp.status(), 401);
+    assert_eq!(resp.status(), 403);
 }
 
 #[actix_web::test]
@@ -509,7 +509,7 @@ async fn update_status_as_admin() {
 }
 
 #[actix_web::test]
-async fn update_status_as_member_returns_401() {
+async fn update_status_as_member_returns_403() {
     let pool = common::create_pool().await;
     let (admin_token, _admin_id, org_id) = common::register_user(&pool).await;
     let (member_token, _member_id) = common::register_member(&pool, org_id).await;
@@ -525,7 +525,7 @@ async fn update_status_as_member_returns_401() {
         .to_request();
 
     let resp = actix_test::call_service(&app, req).await;
-    assert_eq!(resp.status(), 401);
+    assert_eq!(resp.status(), 403);
 }
 
 #[actix_web::test]
@@ -698,7 +698,7 @@ async fn delete_own_comment() {
 }
 
 #[actix_web::test]
-async fn delete_others_comment_returns_401() {
+async fn delete_others_comment_returns_403() {
     let pool = common::create_pool().await;
     let (admin_token, _admin_id, org_id) = common::register_user(&pool).await;
     let (member_token, _member_id) = common::register_member(&pool, org_id).await;
@@ -724,7 +724,7 @@ async fn delete_others_comment_returns_401() {
         .insert_header(("Authorization", format!("Bearer {member_token}")))
         .to_request();
     let resp = actix_test::call_service(&app, req).await;
-    assert_eq!(resp.status(), 401);
+    assert_eq!(resp.status(), 403);
 }
 
 #[actix_web::test]
@@ -896,7 +896,7 @@ async fn member_cannot_create_tag() {
         .set_json(serde_json::json!({ "name": "Nope" }))
         .to_request();
     let resp = actix_test::call_service(&app, req).await;
-    assert_eq!(resp.status(), 401);
+    assert_eq!(resp.status(), 403);
 }
 
 // ============================================================

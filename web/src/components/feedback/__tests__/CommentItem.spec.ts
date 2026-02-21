@@ -1,6 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { setActivePinia, createPinia } from 'pinia'
 import CommentItem from '../CommentItem.vue'
 import type { Comment } from '@/types'
 
@@ -22,10 +21,6 @@ const comment: Comment = {
 }
 
 describe('CommentItem', () => {
-  beforeEach(() => {
-    setActivePinia(createPinia())
-  })
-
   it('renders comment body', () => {
     const wrapper = mount(CommentItem, { props: { comment } })
     expect(wrapper.text()).toContain('Nice feature!')

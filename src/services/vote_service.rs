@@ -11,9 +11,16 @@ pub async fn toggle_vote(
 ) -> Result<VoteResult, AppError> {
     let mut tx = pool.begin().await?;
 
+    // Lock the parent post row to serialize concurrent vote toggles
+    sqlx::query("SELECT 1 FROM posts WHERE id = $1 FOR UPDATE")
+        .bind(post_id)
+        .fetch_optional(&mut *tx)
+        .await?
+        .ok_or_else(|| AppError::NotFound("Post not found".to_string()))?;
+
     // Check if vote already exists
     let existing: Option<Vote> =
-        sqlx::query_as("SELECT * FROM votes WHERE post_id = $1 AND user_id = $2 FOR UPDATE")
+        sqlx::query_as("SELECT * FROM votes WHERE post_id = $1 AND user_id = $2")
             .bind(post_id)
             .bind(user_id)
             .fetch_optional(&mut *tx)
