@@ -11,6 +11,7 @@ mod middleware;
 mod models;
 mod services;
 mod utils;
+mod vault;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
@@ -19,6 +20,8 @@ async fn main() -> std::io::Result<()> {
     tracing_subscriber::fmt()
         .with_env_filter(EnvFilter::from_default_env())
         .init();
+
+    vault::fetch_secrets().await;
 
     let config = config::Config::from_env().expect("Failed to load configuration");
 

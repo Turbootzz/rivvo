@@ -3,6 +3,10 @@ name = "rivvo"
 version = "0.1.0"
 edition = "2024"
 
+[features]
+default = []
+vault = ["dep:reqwest"]
+
 [dependencies]
 actix-web = "4"
 actix-cors = "0.7"
@@ -20,3 +24,4 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 thiserror = "2"
 validator = { version = "0.20", features = ["derive"] }
 slug = "0.1"
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false, optional = true }

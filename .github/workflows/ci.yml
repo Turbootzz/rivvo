@@ -56,6 +56,9 @@ jobs:
       - name: Run tests
         run: cargo test --all-targets
 
+      - name: Run tests (vault feature)
+        run: cargo test --all-targets --features vault
+
   web-check:
     name: Web Check
     runs-on: ubuntu-latest
