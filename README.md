@@ -83,6 +83,42 @@ bun run lint                 # Lint
 bun run test:unit            # Unit tests
 ```
 
+## Vaultwarden Integration (Optional)
+
+Rivvo can optionally fetch `DATABASE_URL` and `JWT_SECRET` from a [Vaultwarden-API](https://github.com/Turbootzz/vaultwarden-api) instance instead of requiring them in `.env` or environment variables.
+
+### Enable the feature
+
+```bash
+cargo build --features vault
+cargo run --features vault
+```
+
+### Configure
+
+Set these environment variables (or add to `.env`):
+
+| Variable | Required | Description |
+|---|---|---|
+| `VAULT_API_URL` | Yes | Base URL of your Vaultwarden-API instance |
+| `VAULT_API_KEY` | Yes | API key for authentication |
+| `VAULT_SECRET_PREFIX` | No | Prefix for secret names in vault (e.g. `RIVVO_`) |
+
+### How it works
+
+1. After loading `.env`, Rivvo checks if `VAULT_API_URL` and `VAULT_API_KEY` are set
+2. For each supported secret (`DATABASE_URL`, `JWT_SECRET`):
+   - If the env var is **already set**, vault is skipped for that secret
+   - Otherwise, fetches `GET {VAULT_API_URL}/secret/{PREFIX}{SECRET_NAME}` with Bearer auth
+   - Sets the env var from the vault response
+3. If vault is unreachable or returns an error, a warning is logged and startup continues
+
+**Environment variables always take precedence over vault values.**
+
+### Keeping secrets separate
+
+Use `VAULT_SECRET_PREFIX` to namespace your Rivvo secrets in Vaultwarden. For example, with `VAULT_SECRET_PREFIX=RIVVO_`, name your vault items `RIVVO_DATABASE_URL` and `RIVVO_JWT_SECRET`. This keeps them separate from other secrets in your vault.
+
 ## License
 
 [AGPL-3.0](LICENSE)

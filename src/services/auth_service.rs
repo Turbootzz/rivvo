@@ -5,6 +5,7 @@ use sqlx::PgPool;
 
 use crate::errors::AppError;
 use crate::models::user::User;
+use crate::services::org_service;
 
 pub async fn register_user(
     pool: &PgPool,
@@ -43,6 +44,9 @@ pub async fn register_user(
         }
         _ => AppError::DatabaseError(e),
     })?;
+
+    // Auto-create an organization for the new user
+    org_service::create_org(pool, &format!("{name}'s Workspace"), user.id).await?;
 
     Ok(user)
 }

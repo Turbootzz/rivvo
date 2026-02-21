@@ -37,7 +37,7 @@ async function handleSubmit() {
     }
 
     authStore.setAuth(response.token, response.user)
-    router.push({ name: 'board' })
+    router.push({ name: 'boards' })
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'Something went wrong'
   } finally {

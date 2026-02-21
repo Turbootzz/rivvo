@@ -1,4 +1,7 @@
 import { useAuthStore } from '@/stores/auth'
+import { useOrgStore } from '@/stores/org'
+import { useBoardStore } from '@/stores/board'
+import { usePostStore } from '@/stores/post'
 import router from '@/router'
 
 const BASE_URL = '/api'
@@ -36,6 +39,9 @@ export function useApi() {
 
     if (response.status === 401 && !skipAuthRedirect) {
       authStore.logout()
+      useOrgStore().clear()
+      useBoardStore().clear()
+      usePostStore().clear()
       router.push({ name: 'login' })
       throw new Error('Unauthorized')
     }
