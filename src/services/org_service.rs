@@ -12,15 +12,16 @@ pub async fn create_org(
 ) -> Result<Organization, AppError> {
     let slug = create_slug(name);
 
+    let mut tx = pool.begin().await?;
+
     let org: Organization =
         sqlx::query_as("INSERT INTO organizations (name, slug) VALUES ($1, $2) RETURNING *")
             .bind(name)
             .bind(&slug)
-            .fetch_one(pool)
+            .fetch_one(&mut *tx)
             .await
             .map_err(|e| match &e {
                 sqlx::Error::Database(db_err) if db_err.code().as_deref() == Some("23505") => {
-                    // Slug conflict — append a short suffix
                     AppError::BadRequest(
                         "An organization with this name already exists".to_string(),
                     )
@@ -32,8 +33,10 @@ pub async fn create_org(
     sqlx::query("INSERT INTO org_members (org_id, user_id, role) VALUES ($1, $2, 'admin')")
         .bind(org.id)
         .bind(user_id)
-        .execute(pool)
+        .execute(&mut *tx)
         .await?;
+
+    tx.commit().await?;
 
     Ok(org)
 }

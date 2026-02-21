@@ -19,11 +19,21 @@ describe('CommentForm', () => {
     expect(wrapper.emitted('submit')).toBeUndefined()
   })
 
-  it('clears textarea after submit', async () => {
+  it('does not clear textarea after submit (parent calls reset)', async () => {
     const wrapper = mount(CommentForm)
 
     await wrapper.find('textarea').setValue('Reply')
     await wrapper.find('form').trigger('submit')
+
+    expect((wrapper.find('textarea').element as HTMLTextAreaElement).value).toBe('Reply')
+  })
+
+  it('clears textarea when reset() is called', async () => {
+    const wrapper = mount(CommentForm)
+
+    await wrapper.find('textarea').setValue('Reply')
+    ;(wrapper.vm as unknown as { reset: () => void }).reset()
+    await wrapper.vm.$nextTick()
 
     expect((wrapper.find('textarea').element as HTMLTextAreaElement).value).toBe('')
   })

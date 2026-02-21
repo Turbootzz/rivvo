@@ -101,6 +101,11 @@ async fn main() -> std::io::Result<()> {
                             .route("", web::get().to(handlers::tags::list_tags))
                             .route("", web::post().to(handlers::tags::create_tag)),
                     )
+                    // Direct post lookup (no board_id required)
+                    .route(
+                        "/posts/{post_id}",
+                        web::get().to(handlers::posts::get_post_direct),
+                    )
                     // Votes
                     .route(
                         "/posts/{post_id}/vote",

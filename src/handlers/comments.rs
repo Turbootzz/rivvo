@@ -21,10 +21,16 @@ pub struct CreateCommentRequest {
 
 pub async fn list_comments(
     pool: web::Data<PgPool>,
-    _auth: AuthenticatedUser,
+    auth: AuthenticatedUser,
     post_id: web::Path<Uuid>,
 ) -> Result<HttpResponse, AppError> {
     let post_id = post_id.into_inner();
+
+    // Verify user is org member
+    let post = post_service::get_post_raw(pool.get_ref(), post_id).await?;
+    let board = board_service::get_board_by_id(pool.get_ref(), post.board_id).await?;
+    org_service::get_member(pool.get_ref(), board.org_id, auth.user_id).await?;
+
     let rows = comment_service::get_comments(pool.get_ref(), post_id).await?;
 
     let response: Vec<CommentResponse> = rows
@@ -55,12 +61,11 @@ pub async fn create_comment(
     body.validate()
         .map_err(|e| AppError::ValidationError(e.to_string()))?;
 
-    // Check if user is admin to mark as admin reply
+    // Verify membership and check admin status
     let post = post_service::get_post_raw(pool.get_ref(), post_id).await?;
     let board = board_service::get_board_by_id(pool.get_ref(), post.board_id).await?;
-    let is_admin = org_service::is_org_admin(pool.get_ref(), board.org_id, auth.user_id)
-        .await
-        .unwrap_or(false);
+    let member = org_service::get_member(pool.get_ref(), board.org_id, auth.user_id).await?;
+    let is_admin = member.role.as_deref() == Some("admin");
 
     let comment = comment_service::create_comment(
         pool.get_ref(),
@@ -90,6 +95,14 @@ pub async fn delete_comment(
     comment_id: web::Path<Uuid>,
 ) -> Result<HttpResponse, AppError> {
     let comment_id = comment_id.into_inner();
-    comment_service::delete_comment(pool.get_ref(), comment_id, auth.user_id).await?;
+
+    // Get org context from comment -> post -> board chain for membership + admin check
+    let comment = comment_service::get_comment_by_id(pool.get_ref(), comment_id).await?;
+    let post = post_service::get_post_raw(pool.get_ref(), comment.post_id).await?;
+    let board = board_service::get_board_by_id(pool.get_ref(), post.board_id).await?;
+    let member = org_service::get_member(pool.get_ref(), board.org_id, auth.user_id).await?;
+    let is_admin = member.role.as_deref() == Some("admin");
+
+    comment_service::delete_comment(pool.get_ref(), comment_id, auth.user_id, is_admin).await?;
     Ok(HttpResponse::NoContent().finish())
 }

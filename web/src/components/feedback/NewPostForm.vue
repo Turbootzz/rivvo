@@ -8,18 +8,10 @@ const emit = defineEmits<{
 
 const title = ref('')
 const description = ref('')
-const loading = ref(false)
 
-async function handleSubmit() {
+function handleSubmit() {
   if (!title.value.trim()) return
-  loading.value = true
-  try {
-    emit('submit', title.value, description.value)
-    title.value = ''
-    description.value = ''
-  } finally {
-    loading.value = false
-  }
+  emit('submit', title.value, description.value)
 }
 </script>
 
@@ -46,7 +38,7 @@ async function handleSubmit() {
       <div class="flex gap-2">
         <button
           type="submit"
-          :disabled="loading || !title.trim()"
+          :disabled="!title.trim()"
           class="rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 disabled:opacity-50"
         >
           Submit

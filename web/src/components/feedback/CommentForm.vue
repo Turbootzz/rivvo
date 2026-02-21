@@ -6,18 +6,17 @@ const emit = defineEmits<{
 }>()
 
 const body = ref('')
-const loading = ref(false)
 
-async function handleSubmit() {
+function handleSubmit() {
   if (!body.value.trim()) return
-  loading.value = true
-  try {
-    emit('submit', body.value)
-    body.value = ''
-  } finally {
-    loading.value = false
-  }
+  emit('submit', body.value)
 }
+
+function reset() {
+  body.value = ''
+}
+
+defineExpose({ reset })
 </script>
 
 <template>
@@ -31,7 +30,7 @@ async function handleSubmit() {
     />
     <button
       type="submit"
-      :disabled="loading || !body.trim()"
+      :disabled="!body.trim()"
       class="self-end rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 disabled:opacity-50"
     >
       Reply

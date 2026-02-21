@@ -31,14 +31,14 @@ describe('NewPostForm', () => {
     expect(wrapper.emitted('cancel')).toHaveLength(1)
   })
 
-  it('clears form after submit', async () => {
+  it('does not clear form after submit (parent handles unmount)', async () => {
     const wrapper = mount(NewPostForm)
 
     await wrapper.find('input').setValue('Title')
     await wrapper.find('textarea').setValue('Desc')
     await wrapper.find('form').trigger('submit')
 
-    expect((wrapper.find('input').element as HTMLInputElement).value).toBe('')
-    expect((wrapper.find('textarea').element as HTMLTextAreaElement).value).toBe('')
+    expect((wrapper.find('input').element as HTMLInputElement).value).toBe('Title')
+    expect((wrapper.find('textarea').element as HTMLTextAreaElement).value).toBe('Desc')
   })
 })

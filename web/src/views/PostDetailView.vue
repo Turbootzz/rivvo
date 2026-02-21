@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft } from 'lucide-vue-next'
 import { useOrgStore } from '@/stores/org'
@@ -17,26 +17,25 @@ const orgStore = useOrgStore()
 const postStore = usePostStore()
 
 const error = ref('')
+const commentFormRef = ref<InstanceType<typeof CommentForm> | null>(null)
 const postId = computed(() => route.params.id as string)
 const isAdmin = computed(() => orgStore.currentOrg?.role === 'admin')
 
 const statusOptions: PostStatus[] = ['open', 'planned', 'in_progress', 'done', 'closed']
 
-onMounted(async () => {
+async function loadPost(id: string) {
+  error.value = ''
+  postStore.clear()
   if (!orgStore.currentOrg) await orgStore.fetchOrg()
-  if (postStore.currentPost?.board_id) {
-    await postStore.fetchPost(postStore.currentPost.board_id, postId.value)
-  } else {
-    // Try to load post with a board_id guess — we need the board_id from the post itself.
-    // Fetch from all posts if we have a board context, otherwise just try fetching by iterating.
-    // For simplicity, use the URL — the post detail fetches from any board_id in the path.
-    // We'll use a trick: the backend accepts any board_id in the path, it just ignores it for GET.
-    await postStore.fetchPost('00000000-0000-0000-0000-000000000000', postId.value)
-  }
+  await postStore.fetchPostDirect(id)
   if (postStore.currentPost) {
     await postStore.fetchComments(postStore.currentPost.id)
   }
-})
+}
+
+onMounted(() => loadPost(postId.value))
+
+watch(postId, (newId) => loadPost(newId))
 
 async function handleVote() {
   if (!postStore.currentPost) return
@@ -61,6 +60,7 @@ async function handleAddComment(body: string) {
   if (!postStore.currentPost) return
   try {
     await postStore.addComment(postStore.currentPost.id, body)
+    commentFormRef.value?.reset()
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'Failed to add comment'
   }
@@ -152,7 +152,7 @@ async function handleDeleteComment(commentId: string) {
         </div>
 
         <div class="mt-4">
-          <CommentForm @submit="handleAddComment" />
+          <CommentForm ref="commentFormRef" @submit="handleAddComment" />
         </div>
       </div>
     </div>

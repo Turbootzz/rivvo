@@ -41,5 +41,10 @@ export const useBoardStore = defineStore('board', () => {
     boards.value = boards.value.filter((b) => b.slug !== slug)
   }
 
-  return { boards, currentBoard, loading, fetchBoards, fetchBoard, createBoard, deleteBoard }
+  function clear() {
+    boards.value = []
+    currentBoard.value = null
+  }
+
+  return { boards, currentBoard, loading, fetchBoards, fetchBoard, createBoard, deleteBoard, clear }
 })

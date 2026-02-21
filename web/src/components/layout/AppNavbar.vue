@@ -1,13 +1,22 @@
 <script setup lang="ts">
 import { useAuthStore } from '@/stores/auth'
+import { useOrgStore } from '@/stores/org'
+import { useBoardStore } from '@/stores/board'
+import { usePostStore } from '@/stores/post'
 import { useRouter } from 'vue-router'
 import { LogIn, LogOut, MessageSquarePlus } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
+const orgStore = useOrgStore()
+const boardStore = useBoardStore()
+const postStore = usePostStore()
 const router = useRouter()
 
 function handleLogout() {
   authStore.logout()
+  orgStore.clear()
+  boardStore.clear()
+  postStore.clear()
   router.push('/')
 }
 </script>

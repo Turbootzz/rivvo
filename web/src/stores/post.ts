@@ -12,6 +12,7 @@ export const usePostStore = defineStore('post', () => {
   async function fetchPosts(boardId: string, sort?: string, status?: string) {
     const api = useApi()
     loading.value = true
+    posts.value = []
     try {
       const params = new URLSearchParams()
       if (sort) params.set('sort', sort)
@@ -30,6 +31,16 @@ export const usePostStore = defineStore('post', () => {
     loading.value = true
     try {
       currentPost.value = await api.get<Post>(`/boards/${boardId}/posts/${postId}`)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function fetchPostDirect(postId: string) {
+    const api = useApi()
+    loading.value = true
+    try {
+      currentPost.value = await api.get<Post>(`/posts/${postId}`)
     } finally {
       loading.value = false
     }
@@ -111,6 +122,12 @@ export const usePostStore = defineStore('post', () => {
     return updated
   }
 
+  function clear() {
+    posts.value = []
+    currentPost.value = null
+    comments.value = []
+  }
+
   return {
     posts,
     currentPost,
@@ -118,11 +135,13 @@ export const usePostStore = defineStore('post', () => {
     loading,
     fetchPosts,
     fetchPost,
+    fetchPostDirect,
     createPost,
     toggleVote,
     fetchComments,
     addComment,
     deleteComment,
     updateStatus,
+    clear,
   }
 })

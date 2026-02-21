@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { Trash2 } from 'lucide-vue-next'
 import type { Comment } from '@/types'
 import { useAuthStore } from '@/stores/auth'
@@ -10,7 +11,9 @@ defineEmits<{
 }>()
 
 const authStore = useAuthStore()
-const isOwner = authStore.user?.id === props.comment.author?.id
+const isOwner = computed(
+  () => !!authStore.user && !!props.comment.author && authStore.user.id === props.comment.author.id,
+)
 </script>
 
 <template>

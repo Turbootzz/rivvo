@@ -53,6 +53,10 @@ pub async fn list_posts(
     let sort = query.sort.as_deref().unwrap_or("votes");
     let status_filter = query.status.as_deref();
 
+    // Verify user is org member
+    let board = board_service::get_board_by_id(pool.get_ref(), board_id).await?;
+    org_service::get_member(pool.get_ref(), board.org_id, auth.user_id).await?;
+
     let rows = post_service::get_posts(pool.get_ref(), board_id, auth.user_id, sort, status_filter)
         .await?;
 
@@ -99,8 +103,9 @@ pub async fn create_post(
     body.validate()
         .map_err(|e| AppError::ValidationError(e.to_string()))?;
 
-    // Verify board exists
-    board_service::get_board_by_id(pool.get_ref(), board_id).await?;
+    // Verify board exists and user is org member
+    let board = board_service::get_board_by_id(pool.get_ref(), board_id).await?;
+    org_service::get_member(pool.get_ref(), board.org_id, auth.user_id).await?;
 
     let post = post_service::create_post(
         pool.get_ref(),
@@ -124,6 +129,25 @@ pub async fn get_post(
     path: web::Path<(Uuid, Uuid)>,
 ) -> Result<HttpResponse, AppError> {
     let (_board_id, post_id) = path.into_inner();
+
+    let detail = post_service::get_post(pool.get_ref(), post_id, auth.user_id).await?;
+    let tags = tag_service::get_post_tags(pool.get_ref(), post_id).await?;
+
+    Ok(HttpResponse::Ok().json(build_detail_response(detail, tags)))
+}
+
+/// Direct post lookup by ID — no board_id required in the path.
+pub async fn get_post_direct(
+    pool: web::Data<PgPool>,
+    auth: AuthenticatedUser,
+    post_id: web::Path<Uuid>,
+) -> Result<HttpResponse, AppError> {
+    let post_id = post_id.into_inner();
+
+    // Verify org membership through post -> board -> org chain
+    let post = post_service::get_post_raw(pool.get_ref(), post_id).await?;
+    let board = board_service::get_board_by_id(pool.get_ref(), post.board_id).await?;
+    org_service::get_member(pool.get_ref(), board.org_id, auth.user_id).await?;
 
     let detail = post_service::get_post(pool.get_ref(), post_id, auth.user_id).await?;
     let tags = tag_service::get_post_tags(pool.get_ref(), post_id).await?;
