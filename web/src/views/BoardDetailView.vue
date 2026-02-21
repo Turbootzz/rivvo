@@ -29,7 +29,7 @@ const statuses: { value: string | undefined; label: string }[] = [
   { value: 'done', label: 'Done' },
 ]
 
-onMounted(async () => {
+async function loadBoard() {
   if (!orgStore.currentOrg) await orgStore.fetchOrg()
   if (orgStore.currentOrg) {
     await boardStore.fetchBoard(orgStore.currentOrg.id, slug.value)
@@ -37,7 +37,11 @@ onMounted(async () => {
       await postStore.fetchPosts(boardStore.currentBoard.id, sort.value, statusFilter.value)
     }
   }
-})
+}
+
+onMounted(loadBoard)
+
+watch(slug, loadBoard)
 
 watch([sort, statusFilter], async () => {
   if (boardStore.currentBoard) {

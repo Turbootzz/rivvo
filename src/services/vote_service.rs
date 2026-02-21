@@ -9,12 +9,14 @@ pub async fn toggle_vote(
     post_id: Uuid,
     user_id: Uuid,
 ) -> Result<VoteResult, AppError> {
+    let mut tx = pool.begin().await?;
+
     // Check if vote already exists
     let existing: Option<Vote> =
-        sqlx::query_as("SELECT * FROM votes WHERE post_id = $1 AND user_id = $2")
+        sqlx::query_as("SELECT * FROM votes WHERE post_id = $1 AND user_id = $2 FOR UPDATE")
             .bind(post_id)
             .bind(user_id)
-            .fetch_optional(pool)
+            .fetch_optional(&mut *tx)
             .await?;
 
     if existing.is_some() {
@@ -22,15 +24,17 @@ pub async fn toggle_vote(
         sqlx::query("DELETE FROM votes WHERE post_id = $1 AND user_id = $2")
             .bind(post_id)
             .bind(user_id)
-            .execute(pool)
+            .execute(&mut *tx)
             .await?;
 
         let row: (i32,) = sqlx::query_as(
             "UPDATE posts SET vote_count = GREATEST(vote_count - 1, 0) WHERE id = $1 RETURNING vote_count",
         )
         .bind(post_id)
-        .fetch_one(pool)
+        .fetch_one(&mut *tx)
         .await?;
+
+        tx.commit().await?;
 
         Ok(VoteResult {
             voted: false,
@@ -41,15 +45,17 @@ pub async fn toggle_vote(
         sqlx::query("INSERT INTO votes (post_id, user_id) VALUES ($1, $2)")
             .bind(post_id)
             .bind(user_id)
-            .execute(pool)
+            .execute(&mut *tx)
             .await?;
 
         let row: (i32,) = sqlx::query_as(
             "UPDATE posts SET vote_count = vote_count + 1 WHERE id = $1 RETURNING vote_count",
         )
         .bind(post_id)
-        .fetch_one(pool)
+        .fetch_one(&mut *tx)
         .await?;
+
+        tx.commit().await?;
 
         Ok(VoteResult {
             voted: true,

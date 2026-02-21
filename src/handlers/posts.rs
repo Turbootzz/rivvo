@@ -63,8 +63,9 @@ pub async fn list_posts(
         let tag_responses: Vec<TagResponse> = tags.into_iter().map(TagResponse::from).collect();
 
         let description_preview = row.description.as_ref().map(|d| {
-            if d.len() > 200 {
-                format!("{}...", &d[..200])
+            if d.chars().count() > 200 {
+                let truncated: String = d.chars().take(200).collect();
+                format!("{truncated}...")
             } else {
                 d.clone()
             }

@@ -52,69 +52,69 @@ INSERT INTO tags (id, board_id, name, color) VALUES
 -- ============================================================
 -- Posts — Feature Requests board
 -- ============================================================
-INSERT INTO posts (id, board_id, author_id, title, description, status, vote_count, comment_count, pinned, created_at) VALUES
+INSERT INTO posts (id, board_id, author_id, title, description, status, pinned, created_at) VALUES
   ('eeeeeeee-0000-0000-0000-000000000001', 'cccccccc-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000002',
    'Dark mode support',
    'It would be great to have a dark mode option. Many of us work late and the bright interface is hard on the eyes.',
-   'planned', 12, 3, FALSE, now() - interval '10 days'),
+   'planned', FALSE, now() - interval '10 days'),
 
   ('eeeeeeee-0000-0000-0000-000000000002', 'cccccccc-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000003',
    'Keyboard shortcuts',
    'Add vim-style keyboard shortcuts for power users. At minimum j/k navigation and Enter to open.',
-   'open', 8, 1, FALSE, now() - interval '7 days'),
+   'open', FALSE, now() - interval '7 days'),
 
   ('eeeeeeee-0000-0000-0000-000000000003', 'cccccccc-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001',
    'API access for integrations',
    'Expose a public REST API so teams can build custom integrations with Slack, Linear, Jira, etc.',
-   'in_progress', 21, 4, TRUE, now() - interval '14 days'),
+   'in_progress', TRUE, now() - interval '14 days'),
 
   ('eeeeeeee-0000-0000-0000-000000000004', 'cccccccc-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000002',
    'Export feedback to CSV',
    'Allow admins to export all posts and votes to CSV for reporting.',
-   'done', 5, 0, FALSE, now() - interval '20 days'),
+   'done', FALSE, now() - interval '20 days'),
 
   ('eeeeeeee-0000-0000-0000-000000000005', 'cccccccc-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000003',
    'Email notifications for status changes',
    'Send an email to voters when a post they voted on changes status.',
-   'open', 15, 2, FALSE, now() - interval '3 days'),
+   'open', FALSE, now() - interval '3 days'),
 
   ('eeeeeeee-0000-0000-0000-000000000006', 'cccccccc-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000002',
    'Single sign-on (SSO)',
    'Support SAML/OIDC for enterprise customers.',
-   'closed', 3, 1, FALSE, now() - interval '30 days');
+   'closed', FALSE, now() - interval '30 days');
 
 -- ============================================================
 -- Posts — Bug Reports board
 -- ============================================================
-INSERT INTO posts (id, board_id, author_id, title, description, status, vote_count, comment_count, created_at) VALUES
+INSERT INTO posts (id, board_id, author_id, title, description, status, created_at) VALUES
   ('eeeeeeee-0000-0000-0000-000000000007', 'cccccccc-0000-0000-0000-000000000002', 'aaaaaaaa-0000-0000-0000-000000000003',
    'Vote count resets on page refresh',
    'When I vote on a post and then refresh the page, the vote count goes back to the previous value.',
-   'in_progress', 6, 2, now() - interval '2 days'),
+   'in_progress', now() - interval '2 days'),
 
   ('eeeeeeee-0000-0000-0000-000000000008', 'cccccccc-0000-0000-0000-000000000002', 'aaaaaaaa-0000-0000-0000-000000000002',
    'Login fails with special characters in password',
    'If your password contains a backtick or backslash, login returns 500.',
-   'open', 4, 1, now() - interval '1 day'),
+   'open', now() - interval '1 day'),
 
   ('eeeeeeee-0000-0000-0000-000000000009', 'cccccccc-0000-0000-0000-000000000002', 'aaaaaaaa-0000-0000-0000-000000000001',
    'Sidebar boards list not updating after create',
    'After creating a new board, the sidebar doesn''t show it until you do a full page refresh.',
-   'done', 2, 0, now() - interval '5 days');
+   'done', now() - interval '5 days');
 
 -- ============================================================
 -- Posts — General Feedback board
 -- ============================================================
-INSERT INTO posts (id, board_id, author_id, title, description, status, vote_count, comment_count, created_at) VALUES
+INSERT INTO posts (id, board_id, author_id, title, description, status, created_at) VALUES
   ('eeeeeeee-0000-0000-0000-000000000010', 'cccccccc-0000-0000-0000-000000000003', 'aaaaaaaa-0000-0000-0000-000000000002',
    'Love the clean UI!',
    'Just wanted to say the interface is really clean and easy to use. Keep it up!',
-   'open', 7, 2, now() - interval '6 days'),
+   'open', now() - interval '6 days'),
 
   ('eeeeeeee-0000-0000-0000-000000000011', 'cccccccc-0000-0000-0000-000000000003', 'aaaaaaaa-0000-0000-0000-000000000003',
    'Mobile experience could be better',
    'The app works on mobile but the layout is pretty cramped. Would love a responsive redesign.',
-   'planned', 9, 1, now() - interval '4 days');
+   'planned', now() - interval '4 days');
 
 -- ============================================================
 -- Post tags
@@ -130,9 +130,9 @@ INSERT INTO post_tags (post_id, tag_id) VALUES
   ('eeeeeeee-0000-0000-0000-000000000009', 'dddddddd-0000-0000-0000-000000000006'); -- Sidebar bug -> Regression
 
 -- ============================================================
--- Votes (create matching vote rows for the counts above)
+-- Votes
 -- ============================================================
--- Dark mode (12 votes — we'll add 2 from our known users, rest are reflected in count)
+-- Dark mode
 INSERT INTO votes (post_id, user_id) VALUES
   ('eeeeeeee-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001'),
   ('eeeeeeee-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000003');
@@ -221,5 +221,11 @@ INSERT INTO comments (post_id, author_id, body, is_admin_reply, created_at) VALU
 INSERT INTO comments (post_id, author_id, body, is_admin_reply, created_at) VALUES
   ('eeeeeeee-0000-0000-0000-000000000011', 'aaaaaaaa-0000-0000-0000-000000000001',
    'Mobile responsive improvements are planned for the next sprint.', TRUE, now() - interval '3 days');
+
+-- ============================================================
+-- Sync denormalized counts from actual rows
+-- ============================================================
+UPDATE posts SET vote_count = (SELECT COUNT(*) FROM votes WHERE votes.post_id = posts.id);
+UPDATE posts SET comment_count = (SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.id);
 
 COMMIT;
