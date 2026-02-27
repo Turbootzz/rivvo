@@ -6,7 +6,7 @@ use validator::Validate;
 
 use crate::errors::AppError;
 use crate::middleware::auth::AuthenticatedUser;
-use crate::models::comment::{CommentAuthor, CommentResponse};
+use crate::models::comment::{CommentAuthor, CommentResponse, CommentWithAuthorRow};
 use crate::services::{board_service, comment_service, org_service, post_service};
 
 #[derive(Deserialize, Validate)]
@@ -32,21 +32,7 @@ pub async fn list_comments(
     org_service::get_member(pool.get_ref(), board.org_id, auth.user_id).await?;
 
     let rows = comment_service::get_comments(pool.get_ref(), post_id).await?;
-
-    let response: Vec<CommentResponse> = rows
-        .into_iter()
-        .map(|row| CommentResponse {
-            id: row.id,
-            body: row.body,
-            is_admin_reply: row.is_admin_reply.unwrap_or(false),
-            author: row.author_id.map(|id| CommentAuthor {
-                id,
-                name: row.author_name.unwrap_or_default(),
-                avatar_url: row.author_avatar_url,
-            }),
-            created_at: row.created_at,
-        })
-        .collect();
+    let response = build_comment_list(rows);
 
     Ok(HttpResponse::Ok().json(response))
 }
@@ -112,4 +98,20 @@ pub async fn delete_comment(
     )
     .await?;
     Ok(HttpResponse::NoContent().finish())
+}
+
+pub(crate) fn build_comment_list(rows: Vec<CommentWithAuthorRow>) -> Vec<CommentResponse> {
+    rows.into_iter()
+        .map(|row| CommentResponse {
+            id: row.id,
+            body: row.body,
+            is_admin_reply: row.is_admin_reply.unwrap_or(false),
+            author: row.author_id.map(|id| CommentAuthor {
+                id,
+                name: row.author_name.unwrap_or_default(),
+                avatar_url: row.author_avatar_url,
+            }),
+            created_at: row.created_at,
+        })
+        .collect()
 }

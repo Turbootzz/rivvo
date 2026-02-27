@@ -47,7 +47,11 @@ describe('org store', () => {
 
   it('fetchOrg sets loading during request', async () => {
     let resolve: (v: unknown[]) => void
-    mockGet.mockReturnValue(new Promise((r) => { resolve = r }))
+    mockGet.mockReturnValue(
+      new Promise((r) => {
+        resolve = r
+      }),
+    )
 
     const store = useOrgStore()
     const promise = store.fetchOrg()

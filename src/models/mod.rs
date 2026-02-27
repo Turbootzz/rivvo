@@ -1,4 +1,5 @@
 pub mod board;
+pub mod changelog;
 pub mod comment;
 pub mod organization;
 pub mod post;

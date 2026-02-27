@@ -62,6 +62,14 @@ pub async fn get_user_orgs(
     Ok(orgs)
 }
 
+pub async fn get_org_by_slug(pool: &PgPool, slug: &str) -> Result<Organization, AppError> {
+    sqlx::query_as("SELECT * FROM organizations WHERE slug = $1")
+        .bind(slug)
+        .fetch_optional(pool)
+        .await?
+        .ok_or_else(|| AppError::NotFound("Organization not found".to_string()))
+}
+
 pub async fn get_member(pool: &PgPool, org_id: Uuid, user_id: Uuid) -> Result<OrgMember, AppError> {
     sqlx::query_as("SELECT * FROM org_members WHERE org_id = $1 AND user_id = $2")
         .bind(org_id)

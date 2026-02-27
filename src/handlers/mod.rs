@@ -1,8 +1,10 @@
 pub mod auth;
 pub mod boards;
+pub mod changelog;
 pub mod comments;
 pub mod health;
 pub mod organizations;
 pub mod posts;
+pub mod public;
 pub mod tags;
 pub mod votes;

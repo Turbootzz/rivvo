@@ -24,16 +24,24 @@ async function handleSubmit() {
     let response: AuthResponse
 
     if (isRegister.value) {
-      response = await api.post<AuthResponse>('/auth/register', {
-        email: email.value,
-        name: name.value,
-        password: password.value,
-      }, { skipAuthRedirect: true })
+      response = await api.post<AuthResponse>(
+        '/auth/register',
+        {
+          email: email.value,
+          name: name.value,
+          password: password.value,
+        },
+        { skipAuthRedirect: true },
+      )
     } else {
-      response = await api.post<AuthResponse>('/auth/login', {
-        email: email.value,
-        password: password.value,
-      }, { skipAuthRedirect: true })
+      response = await api.post<AuthResponse>(
+        '/auth/login',
+        {
+          email: email.value,
+          password: password.value,
+        },
+        { skipAuthRedirect: true },
+      )
     }
 
     authStore.setAuth(response.token, response.user)
@@ -107,7 +115,10 @@ async function handleSubmit() {
       <p class="mt-4 text-center text-sm text-gray-600">
         {{ isRegister ? 'Already have an account?' : "Don't have an account?" }}
         <button
-          @click="isRegister = !isRegister; error = ''"
+          @click="
+            isRegister = !isRegister
+            error = ''
+          "
           class="font-medium text-primary-600 hover:text-primary-700"
         >
           {{ isRegister ? 'Sign in' : 'Create one' }}

@@ -123,7 +123,10 @@ async function handleDeleteComment(commentId: string) {
       </div>
 
       <!-- Post body -->
-      <div v-if="postStore.currentPost.description" class="mt-4 whitespace-pre-wrap text-sm text-gray-700">
+      <div
+        v-if="postStore.currentPost.description"
+        class="mt-4 whitespace-pre-wrap text-sm text-gray-700"
+      >
         {{ postStore.currentPost.description }}
       </div>
 

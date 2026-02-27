@@ -1,5 +1,6 @@
 pub mod auth_service;
 pub mod board_service;
+pub mod changelog_service;
 pub mod comment_service;
 pub mod org_service;
 pub mod post_service;

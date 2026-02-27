@@ -117,6 +117,42 @@ async fn main() -> std::io::Result<()> {
                             .route("", web::get().to(handlers::comments::list_comments))
                             .route("", web::post().to(handlers::comments::create_comment)),
                     )
+                    // Public endpoints (no auth required)
+                    .service(
+                        web::scope("/public/{org_slug}")
+                            .route("/boards", web::get().to(handlers::public::list_boards))
+                            .route(
+                                "/changelog",
+                                web::get().to(handlers::public::list_changelog),
+                            )
+                            .service(
+                                web::scope("/boards/{board_slug}")
+                                    .route("/posts", web::get().to(handlers::public::list_posts))
+                                    .route(
+                                        "/posts/{post_id}",
+                                        web::get().to(handlers::public::get_post),
+                                    )
+                                    .route(
+                                        "/posts/{post_id}/comments",
+                                        web::get().to(handlers::public::list_comments),
+                                    )
+                                    .route("/roadmap", web::get().to(handlers::public::roadmap)),
+                            ),
+                    )
+                    // Changelog (admin CRUD)
+                    .service(
+                        web::scope("/orgs/{org_id}/changelog")
+                            .route("", web::get().to(handlers::changelog::list_entries))
+                            .route("", web::post().to(handlers::changelog::create_entry)),
+                    )
+                    .route(
+                        "/changelog/{id}",
+                        web::put().to(handlers::changelog::update_entry),
+                    )
+                    .route(
+                        "/changelog/{id}",
+                        web::delete().to(handlers::changelog::delete_entry),
+                    )
                     // Comment delete + Tag delete + post tag assignment
                     .route(
                         "/comments/{comment_id}",

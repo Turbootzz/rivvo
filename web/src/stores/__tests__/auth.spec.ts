@@ -5,8 +5,12 @@ import { setActivePinia, createPinia } from 'pinia'
 const storage: Record<string, string> = {}
 const localStorageMock = {
   getItem: vi.fn((key: string) => storage[key] ?? null),
-  setItem: vi.fn((key: string, value: string) => { storage[key] = value }),
-  removeItem: vi.fn((key: string) => { delete storage[key] }),
+  setItem: vi.fn((key: string, value: string) => {
+    storage[key] = value
+  }),
+  removeItem: vi.fn((key: string) => {
+    delete storage[key]
+  }),
 }
 Object.defineProperty(globalThis, 'localStorage', { value: localStorageMock, writable: true })
 

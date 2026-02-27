@@ -8,8 +8,8 @@ import { MessageSquarePlus, Vote, Map as MapIcon } from 'lucide-vue-next'
       Collect feedback, build what matters
     </h1>
     <p class="mt-4 max-w-2xl text-center text-lg text-gray-600">
-      Let your users submit feature requests, vote on ideas, and track progress.
-      Open-source, self-hostable, and blazing fast.
+      Let your users submit feature requests, vote on ideas, and track progress. Open-source,
+      self-hostable, and blazing fast.
     </p>
     <div class="mt-8 flex gap-4">
       <RouterLink

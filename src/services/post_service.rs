@@ -30,66 +30,71 @@ pub async fn create_post(
 pub async fn get_posts(
     pool: &PgPool,
     board_id: Uuid,
-    user_id: Uuid,
+    user_id: Option<Uuid>,
     sort: &str,
     status_filter: Option<&str>,
+    search: Option<&str>,
 ) -> Result<Vec<PostListRow>, AppError> {
+    let effective_user_id = user_id.unwrap_or(Uuid::nil());
+
     let order_clause = match sort {
         "recent" => "p.created_at DESC",
         "oldest" => "p.created_at ASC",
         _ => "p.vote_count DESC, p.created_at DESC", // "votes" default
     };
 
-    // Build query dynamically based on filter
-    let query = if status_filter.is_some() {
-        format!(
-            r#"
-            SELECT p.id, p.title, p.description, p.status, p.vote_count, p.comment_count,
-                   p.pinned, u.name as author_name, p.created_at,
-                   EXISTS(SELECT 1 FROM votes v WHERE v.post_id = p.id AND v.user_id = $2) as has_voted
-            FROM posts p
-            LEFT JOIN users u ON u.id = p.author_id
-            WHERE p.board_id = $1 AND p.status = $3
-            ORDER BY p.pinned DESC, {order_clause}
-            "#
-        )
-    } else {
-        format!(
-            r#"
-            SELECT p.id, p.title, p.description, p.status, p.vote_count, p.comment_count,
-                   p.pinned, u.name as author_name, p.created_at,
-                   EXISTS(SELECT 1 FROM votes v WHERE v.post_id = p.id AND v.user_id = $2) as has_voted
-            FROM posts p
-            LEFT JOIN users u ON u.id = p.author_id
-            WHERE p.board_id = $1
-            ORDER BY p.pinned DESC, {order_clause}
-            "#
-        )
-    };
+    // Build WHERE conditions dynamically
+    let mut conditions = vec!["p.board_id = $1".to_string()];
+    let mut param_idx = 3; // $1 = board_id, $2 = user_id
 
-    let rows = if let Some(status) = status_filter {
-        sqlx::query_as::<_, PostListRow>(&query)
-            .bind(board_id)
-            .bind(user_id)
-            .bind(status)
-            .fetch_all(pool)
-            .await?
-    } else {
-        sqlx::query_as::<_, PostListRow>(&query)
-            .bind(board_id)
-            .bind(user_id)
-            .fetch_all(pool)
-            .await?
-    };
+    if status_filter.is_some() {
+        conditions.push(format!("p.status = ${param_idx}"));
+        param_idx += 1;
+    }
 
+    if search.is_some() {
+        conditions.push(format!(
+            "(p.title ILIKE ${param_idx} OR p.description ILIKE ${param_idx})"
+        ));
+    }
+
+    let where_clause = conditions.join(" AND ");
+
+    let query = format!(
+        r#"
+        SELECT p.id, p.title, p.description, p.status, p.vote_count, p.comment_count,
+               p.pinned, u.name as author_name, p.created_at,
+               EXISTS(SELECT 1 FROM votes v WHERE v.post_id = p.id AND v.user_id = $2) as has_voted
+        FROM posts p
+        LEFT JOIN users u ON u.id = p.author_id
+        WHERE {where_clause}
+        ORDER BY p.pinned DESC, {order_clause}
+        "#
+    );
+
+    let mut qb = sqlx::query_as::<_, PostListRow>(&query)
+        .bind(board_id)
+        .bind(effective_user_id);
+
+    if let Some(status) = status_filter {
+        qb = qb.bind(status.to_string());
+    }
+
+    if let Some(term) = search {
+        qb = qb.bind(format!("%{term}%"));
+    }
+
+    let rows = qb.fetch_all(pool).await?;
     Ok(rows)
 }
 
 pub async fn get_post(
     pool: &PgPool,
     post_id: Uuid,
-    user_id: Uuid,
+    user_id: Option<Uuid>,
 ) -> Result<PostDetailRow, AppError> {
+    let effective_user_id = user_id.unwrap_or(Uuid::nil());
+
     sqlx::query_as(
         r#"
         SELECT p.id, p.board_id, p.title, p.description, p.status, p.vote_count, p.comment_count,
@@ -102,7 +107,7 @@ pub async fn get_post(
         "#,
     )
     .bind(post_id)
-    .bind(user_id)
+    .bind(effective_user_id)
     .fetch_optional(pool)
     .await?
     .ok_or_else(|| AppError::NotFound("Post not found".to_string()))

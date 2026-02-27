@@ -25,7 +25,11 @@ async function createBoard() {
   if (!newName.value.trim() || !orgStore.currentOrg) return
   error.value = ''
   try {
-    await boardStore.createBoard(orgStore.currentOrg.id, newName.value, newDescription.value || undefined)
+    await boardStore.createBoard(
+      orgStore.currentOrg.id,
+      newName.value,
+      newDescription.value || undefined,
+    )
     newName.value = ''
     newDescription.value = ''
     showForm.value = false
@@ -90,12 +94,17 @@ function openBoard(slug: string) {
 
     <div v-if="boardStore.loading" class="mt-8 text-center text-sm text-gray-500">Loading...</div>
 
-    <div v-else-if="boardStore.boards.length === 0" class="mt-16 flex flex-col items-center text-center">
+    <div
+      v-else-if="boardStore.boards.length === 0"
+      class="mt-16 flex flex-col items-center text-center"
+    >
       <div class="flex h-16 w-16 items-center justify-center rounded-full bg-primary-100">
         <LayoutDashboard class="h-8 w-8 text-primary-600" />
       </div>
       <h2 class="mt-4 text-lg font-semibold text-gray-900">No boards yet</h2>
-      <p class="mt-1 text-sm text-gray-500">Create your first board to start collecting feedback.</p>
+      <p class="mt-1 text-sm text-gray-500">
+        Create your first board to start collecting feedback.
+      </p>
     </div>
 
     <div v-else class="mt-4 space-y-3">
@@ -107,7 +116,9 @@ function openBoard(slug: string) {
       >
         <div>
           <h3 class="font-semibold text-gray-900">{{ board.name }}</h3>
-          <p v-if="board.description" class="mt-0.5 text-sm text-gray-500">{{ board.description }}</p>
+          <p v-if="board.description" class="mt-0.5 text-sm text-gray-500">
+            {{ board.description }}
+          </p>
         </div>
         <span class="text-sm text-gray-400">{{ board.post_count }} posts</span>
       </div>

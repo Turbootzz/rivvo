@@ -23,6 +23,20 @@ impl FromRequest for AuthenticatedUser {
     }
 }
 
+pub struct OptionalAuthenticatedUser {
+    pub user_id: Option<Uuid>,
+}
+
+impl FromRequest for OptionalAuthenticatedUser {
+    type Error = Error;
+    type Future = Ready<Result<Self, Self::Error>>;
+
+    fn from_request(req: &HttpRequest, _payload: &mut Payload) -> Self::Future {
+        let user_id = extract_user(req).ok().map(|u| u.user_id);
+        ready(Ok(OptionalAuthenticatedUser { user_id }))
+    }
+}
+
 fn extract_user(req: &HttpRequest) -> Result<AuthenticatedUser, Error> {
     let auth_header = req
         .headers()

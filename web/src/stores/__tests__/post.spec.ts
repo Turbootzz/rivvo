@@ -92,7 +92,10 @@ describe('post store', () => {
     const store = usePostStore()
     const result = await store.createPost('board-1', 'New', 'Description')
 
-    expect(mockPost).toHaveBeenCalledWith('/boards/board-1/posts', { title: 'New', description: 'Description' })
+    expect(mockPost).toHaveBeenCalledWith('/boards/board-1/posts', {
+      title: 'New',
+      description: 'Description',
+    })
     expect(result).toEqual(post)
   })
 
@@ -140,7 +143,13 @@ describe('post store', () => {
   })
 
   it('addComment pushes to list and increments counts', async () => {
-    const comment: Comment = { id: 'c2', body: 'Reply', is_admin_reply: false, author: null, created_at: '' }
+    const comment: Comment = {
+      id: 'c2',
+      body: 'Reply',
+      is_admin_reply: false,
+      author: null,
+      created_at: '',
+    }
     mockPost.mockResolvedValue(comment)
 
     const store = usePostStore()

@@ -14,6 +14,7 @@ const router = createRouter({
       name: 'login',
       component: () => import('@/views/LoginView.vue'),
     },
+    // Authenticated admin routes
     {
       path: '/boards',
       name: 'boards',
@@ -39,10 +40,35 @@ const router = createRouter({
       meta: { requiresAuth: true, showChrome: true },
     },
     {
-      path: '/changelog',
-      name: 'changelog',
+      path: '/changelog/manage',
+      name: 'changelog-manage',
+      component: () => import('@/views/ChangelogManageView.vue'),
+      meta: { requiresAuth: true, showChrome: true },
+    },
+    // Public routes (no auth required)
+    {
+      path: '/:orgSlug/board/:boardSlug',
+      name: 'public-board',
+      component: () => import('@/views/PublicBoardView.vue'),
+      meta: { publicView: true },
+    },
+    {
+      path: '/:orgSlug/board/:boardSlug/post/:postId',
+      name: 'public-post',
+      component: () => import('@/views/PublicPostDetailView.vue'),
+      meta: { publicView: true },
+    },
+    {
+      path: '/:orgSlug/roadmap/:boardSlug',
+      name: 'public-roadmap',
+      component: () => import('@/views/RoadmapView.vue'),
+      meta: { publicView: true },
+    },
+    {
+      path: '/:orgSlug/changelog',
+      name: 'public-changelog',
       component: () => import('@/views/ChangelogView.vue'),
-      meta: { showChrome: true },
+      meta: { publicView: true },
     },
   ],
 })

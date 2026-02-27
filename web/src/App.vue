@@ -7,11 +7,12 @@ import AppFooter from '@/components/layout/AppFooter.vue'
 
 const route = useRoute()
 const showChrome = computed(() => !!route.meta.showChrome)
+const isPublicView = computed(() => !!route.meta.publicView)
 </script>
 
 <template>
   <div class="flex min-h-screen flex-col bg-gray-50">
-    <AppNavbar v-if="showChrome" />
+    <AppNavbar v-if="showChrome || isPublicView" />
     <div class="flex flex-1">
       <AppSidebar v-if="showChrome" />
       <main class="flex-1 p-6">

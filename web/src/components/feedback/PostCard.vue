@@ -18,7 +18,11 @@ defineEmits<{
     class="flex gap-4 rounded-lg border border-gray-200 bg-white p-4 transition-colors hover:border-gray-300 cursor-pointer"
     @click="$emit('click', post.id)"
   >
-    <VoteButton :vote-count="post.vote_count" :has-voted="post.has_voted" @vote="$emit('vote', post.id)" />
+    <VoteButton
+      :vote-count="post.vote_count"
+      :has-voted="post.has_voted"
+      @vote="$emit('vote', post.id)"
+    />
 
     <div class="min-w-0 flex-1">
       <div class="flex items-center gap-2">

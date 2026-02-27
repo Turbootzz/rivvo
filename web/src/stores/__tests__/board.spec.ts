@@ -15,7 +15,13 @@ vi.mock('@/composables/useApi', () => ({
   }),
 }))
 
-const board: Board = { id: '1', name: 'Features', slug: 'features', description: null, post_count: 5 }
+const board: Board = {
+  id: '1',
+  name: 'Features',
+  slug: 'features',
+  description: null,
+  post_count: 5,
+}
 
 describe('board store', () => {
   beforeEach(() => {
@@ -51,13 +57,22 @@ describe('board store', () => {
   })
 
   it('createBoard adds to list', async () => {
-    const newBoard = { id: '2', name: 'Bugs', slug: 'bugs', description: 'Bug reports', post_count: 0 }
+    const newBoard = {
+      id: '2',
+      name: 'Bugs',
+      slug: 'bugs',
+      description: 'Bug reports',
+      post_count: 0,
+    }
     mockPost.mockResolvedValue(newBoard)
 
     const store = useBoardStore()
     const result = await store.createBoard('org-1', 'Bugs', 'Bug reports')
 
-    expect(mockPost).toHaveBeenCalledWith('/orgs/org-1/boards', { name: 'Bugs', description: 'Bug reports' })
+    expect(mockPost).toHaveBeenCalledWith('/orgs/org-1/boards', {
+      name: 'Bugs',
+      description: 'Bug reports',
+    })
     expect(store.boards).toContainEqual(newBoard)
     expect(result).toEqual(newBoard)
   })
@@ -66,7 +81,10 @@ describe('board store', () => {
     mockDel.mockResolvedValue(null)
 
     const store = useBoardStore()
-    store.boards = [board, { id: '2', name: 'Bugs', slug: 'bugs', description: null, post_count: 0 }]
+    store.boards = [
+      board,
+      { id: '2', name: 'Bugs', slug: 'bugs', description: null, post_count: 0 },
+    ]
 
     await store.deleteBoard('org-1', 'features')
 
@@ -77,7 +95,11 @@ describe('board store', () => {
 
   it('fetchBoards manages loading state', async () => {
     let resolve: (v: Board[]) => void
-    mockGet.mockReturnValue(new Promise((r) => { resolve = r }))
+    mockGet.mockReturnValue(
+      new Promise((r) => {
+        resolve = r
+      }),
+    )
 
     const store = useBoardStore()
     const promise = store.fetchBoards('org-1')

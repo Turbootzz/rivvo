@@ -89,3 +89,18 @@ export interface VoteResult {
   voted: boolean
   vote_count: number
 }
+
+export interface ChangelogEntry {
+  id: string
+  title: string
+  body: string
+  published_at: string | null
+  is_draft: boolean
+  created_at: string
+}
+
+export interface RoadmapData {
+  planned: PostListItem[]
+  in_progress: PostListItem[]
+  done: PostListItem[]
+}

@@ -18,9 +18,7 @@ vi.mock('@/components/layout/AppFooter.vue', () => ({
 function createTestRouter(showChrome = false) {
   return createRouter({
     history: createMemoryHistory(),
-    routes: [
-      { path: '/', component: { template: '<div>Home</div>' }, meta: { showChrome } },
-    ],
+    routes: [{ path: '/', component: { template: '<div>Home</div>' }, meta: { showChrome } }],
   })
 }
 

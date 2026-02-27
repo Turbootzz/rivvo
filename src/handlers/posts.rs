@@ -6,7 +6,7 @@ use validator::Validate;
 
 use crate::errors::AppError;
 use crate::middleware::auth::AuthenticatedUser;
-use crate::models::post::{PostAuthor, PostDetailResponse, PostListResponse};
+use crate::models::post::{PostAuthor, PostDetailResponse, PostListResponse, PostListRow};
 use crate::models::tag::TagResponse;
 use crate::services::{board_service, org_service, post_service, tag_service};
 
@@ -33,6 +33,7 @@ pub struct UpdateStatusRequest {
 pub struct PostQuery {
     pub sort: Option<String>,
     pub status: Option<String>,
+    pub search: Option<String>,
 }
 
 pub async fn list_posts(
@@ -49,45 +50,20 @@ pub async fn list_posts(
     let board = board_service::get_board_by_id(pool.get_ref(), board_id).await?;
     org_service::get_member(pool.get_ref(), board.org_id, auth.user_id).await?;
 
-    let rows = post_service::get_posts(pool.get_ref(), board_id, auth.user_id, sort, status_filter)
-        .await?;
+    let search = query.search.as_deref();
+    let rows = post_service::get_posts(
+        pool.get_ref(),
+        board_id,
+        Some(auth.user_id),
+        sort,
+        status_filter,
+        search,
+    )
+    .await?;
 
-    // Fetch tags for all posts in a single batch query
     let post_ids: Vec<Uuid> = rows.iter().map(|r| r.id).collect();
     let mut tags_map = tag_service::get_tags_for_post_ids(pool.get_ref(), &post_ids).await?;
-
-    let mut response: Vec<PostListResponse> = Vec::with_capacity(rows.len());
-    for row in rows {
-        let tag_responses: Vec<TagResponse> = tags_map
-            .remove(&row.id)
-            .unwrap_or_default()
-            .into_iter()
-            .map(TagResponse::from)
-            .collect();
-
-        let description_preview = row.description.as_ref().map(|d| {
-            if d.chars().count() > 200 {
-                let truncated: String = d.chars().take(200).collect();
-                format!("{truncated}...")
-            } else {
-                d.clone()
-            }
-        });
-
-        response.push(PostListResponse {
-            id: row.id,
-            title: row.title,
-            description_preview,
-            status: row.status.unwrap_or_else(|| "open".to_string()),
-            vote_count: row.vote_count.unwrap_or(0),
-            comment_count: row.comment_count.unwrap_or(0),
-            pinned: row.pinned.unwrap_or(false),
-            author_name: row.author_name,
-            has_voted: row.has_voted,
-            tags: tag_responses,
-            created_at: row.created_at,
-        });
-    }
+    let response = build_post_list_response(rows, &mut tags_map);
 
     Ok(HttpResponse::Ok().json(response))
 }
@@ -116,7 +92,7 @@ pub async fn create_post(
     .await?;
 
     // Return full detail response
-    let detail = post_service::get_post(pool.get_ref(), post.id, auth.user_id).await?;
+    let detail = post_service::get_post(pool.get_ref(), post.id, Some(auth.user_id)).await?;
     let tags = tag_service::get_post_tags(pool.get_ref(), post.id).await?;
 
     Ok(HttpResponse::Created().json(build_detail_response(detail, tags)))
@@ -133,7 +109,7 @@ pub async fn get_post(
     let board = board_service::get_board_by_id(pool.get_ref(), board_id).await?;
     org_service::get_member(pool.get_ref(), board.org_id, auth.user_id).await?;
 
-    let detail = post_service::get_post(pool.get_ref(), post_id, auth.user_id).await?;
+    let detail = post_service::get_post(pool.get_ref(), post_id, Some(auth.user_id)).await?;
 
     // Verify post belongs to the board in the URL path
     if detail.board_id != board_id {
@@ -158,7 +134,7 @@ pub async fn get_post_direct(
     let board = board_service::get_board_by_id(pool.get_ref(), post.board_id).await?;
     org_service::get_member(pool.get_ref(), board.org_id, auth.user_id).await?;
 
-    let detail = post_service::get_post(pool.get_ref(), post_id, auth.user_id).await?;
+    let detail = post_service::get_post(pool.get_ref(), post_id, Some(auth.user_id)).await?;
     let tags = tag_service::get_post_tags(pool.get_ref(), post_id).await?;
 
     Ok(HttpResponse::Ok().json(build_detail_response(detail, tags)))
@@ -196,7 +172,7 @@ pub async fn update_post(
     )
     .await?;
 
-    let detail = post_service::get_post(pool.get_ref(), updated.id, auth.user_id).await?;
+    let detail = post_service::get_post(pool.get_ref(), updated.id, Some(auth.user_id)).await?;
     let tags = tag_service::get_post_tags(pool.get_ref(), updated.id).await?;
 
     Ok(HttpResponse::Ok().json(build_detail_response(detail, tags)))
@@ -244,13 +220,52 @@ pub async fn update_status(
     org_service::require_org_admin(pool.get_ref(), board.org_id, auth.user_id).await?;
 
     let updated = post_service::update_status(pool.get_ref(), post_id, &body.status).await?;
-    let detail = post_service::get_post(pool.get_ref(), updated.id, auth.user_id).await?;
+    let detail = post_service::get_post(pool.get_ref(), updated.id, Some(auth.user_id)).await?;
     let tags = tag_service::get_post_tags(pool.get_ref(), updated.id).await?;
 
     Ok(HttpResponse::Ok().json(build_detail_response(detail, tags)))
 }
 
-fn build_detail_response(
+pub(crate) fn build_post_list_response(
+    rows: Vec<PostListRow>,
+    tags_map: &mut std::collections::HashMap<Uuid, Vec<crate::models::tag::Tag>>,
+) -> Vec<PostListResponse> {
+    rows.into_iter()
+        .map(|row| {
+            let tag_responses: Vec<TagResponse> = tags_map
+                .remove(&row.id)
+                .unwrap_or_default()
+                .into_iter()
+                .map(TagResponse::from)
+                .collect();
+
+            let description_preview = row.description.as_ref().map(|d| {
+                if d.chars().count() > 200 {
+                    let truncated: String = d.chars().take(200).collect();
+                    format!("{truncated}...")
+                } else {
+                    d.clone()
+                }
+            });
+
+            PostListResponse {
+                id: row.id,
+                title: row.title,
+                description_preview,
+                status: row.status.unwrap_or_else(|| "open".to_string()),
+                vote_count: row.vote_count.unwrap_or(0),
+                comment_count: row.comment_count.unwrap_or(0),
+                pinned: row.pinned.unwrap_or(false),
+                author_name: row.author_name,
+                has_voted: row.has_voted,
+                tags: tag_responses,
+                created_at: row.created_at,
+            }
+        })
+        .collect()
+}
+
+pub(crate) fn build_detail_response(
     row: crate::models::post::PostDetailRow,
     tags: Vec<crate::models::tag::Tag>,
 ) -> PostDetailResponse {

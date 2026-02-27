@@ -77,10 +77,15 @@ function openPost(postId: string) {
 <template>
   <div class="mx-auto max-w-3xl">
     <div class="flex items-center gap-3">
-      <button @click="router.push({ name: 'boards' })" class="rounded-md p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600">
+      <button
+        @click="router.push({ name: 'boards' })"
+        class="rounded-md p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
+      >
         <ArrowLeft class="h-5 w-5" />
       </button>
-      <h1 class="text-2xl font-bold text-gray-900">{{ boardStore.currentBoard?.name ?? 'Board' }}</h1>
+      <h1 class="text-2xl font-bold text-gray-900">
+        {{ boardStore.currentBoard?.name ?? 'Board' }}
+      </h1>
     </div>
 
     <p v-if="boardStore.currentBoard?.description" class="mt-1 text-sm text-gray-500">
@@ -97,7 +102,11 @@ function openPost(postId: string) {
           :key="s.label"
           @click="statusFilter = s.value"
           class="rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
-          :class="statusFilter === s.value ? 'bg-primary-100 text-primary-700' : 'text-gray-500 hover:bg-gray-100'"
+          :class="
+            statusFilter === s.value
+              ? 'bg-primary-100 text-primary-700'
+              : 'text-gray-500 hover:bg-gray-100'
+          "
         >
           {{ s.label }}
         </button>
